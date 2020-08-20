@@ -50,5 +50,26 @@ ylabel('CH_{4} umol m ^{-2} s ^{-1}','fontsize',20);
 xlabel('Surface Type','fontsize',20);
 
 %% Plot each of the datasets, match to a gaussian
-%plot the data for 
+
+%TODO
+%make the program plot the data automatically. Currently done separately
+%due to differing data sets working better with different bin sizes
+%plot the data for lake ice
 histogram(locations_data{1,1},20);
+title("lake ice flux measurements", 'fontsize',20); xlabel('CH_{4} umol m ^{-2} s ^{-1}','fontsize',20); ylabel('# of readings','fontsize',20);
+figure;
+histogram(locations_data{2,1},20);
+title("littoral typha measurements", 'fontsize',20); xlabel('CH_{4} umol m ^{-2} s ^{-1}','fontsize',20); ylabel('# of readings','fontsize',20);
+figure;
+histogram(locations_data{3,1},20);
+title("littoral sedge measurements", 'fontsize',20); xlabel('CH_{4} umol m ^{-2} s ^{-1}','fontsize',20); ylabel('# of readings','fontsize',20);
+figure;
+histogram(locations_data{4,1},20); xlabel('CH_{4} umol m ^{-2} s ^{-1}','fontsize',20); ylabel('# of readings','fontsize',20);
+title("active margin", 'fontsize',20);
+figure;
+histogram(locations_data{5,1},20); xlabel('CH_{4} umol m ^{-2} s ^{-1}','fontsize',20); ylabel('# of readings','fontsize',20);
+title("upland forest", 'fontsize',20);
+figure;
+
+
+
