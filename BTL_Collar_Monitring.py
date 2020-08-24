@@ -5,6 +5,7 @@ import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
 import pandas as pd
+import os
 from pathlib import Path
 from math import *
 
@@ -14,6 +15,16 @@ from math import *
 
 #edited by Simon Peterson for Katey Anthony and Nick Hasson
 #08/20/2020
+
+#TODO- make sample ID print to command line, automatically create the ID tag
+
+#current working directory
+cwd = os.getcwd()
+output_folder = os.path.join(cwd, "outputs")
+input_folder = os.path.join(cwd, "inputs")
+print(output_folder)
+print(input_folder)
+exit()
 sample_id = '2020_07-30_Vault-Lake_Buckt-T1'
 
 # #submersion depth in water or snow (cm)
