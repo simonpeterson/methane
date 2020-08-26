@@ -20,12 +20,49 @@ from math import *
 
 #current working directory
 cwd = os.getcwd()
-output_folder = os.path.join(cwd, "outputs")
-input_folder = os.path.join(cwd, "inputs")
-print(output_folder)
-print(input_folder)
+lgr_output_folder = os.path.join(cwd, "outputs","lgr")
+lgr_input_folder = os.path.join(cwd, "inputs","lgr")
+weather_input_folder = os.path.join(cwd, "inputs", "weather") 
+print("pulling lgr data from: \n" + lgr_output_folder + "\n")
+print("pulling weather data, when not from internet, from: \n" + lgr_input_folder + "\n")
+
+#read the excel file for the input. Close the file before reading it.
+master_csv_path = os.path.join(cwd, "data","simon_masters.xlsx")
+master_data = pd.read_excel(master_csv_path, header = 0) #headers are the first row
+print(master_data)
+
+
+#read the data from the lgr files. Clean any "dirty" files.
+#TODO- make so that junk at the end of the files is cleaned up
+first = True
+for file in os.listdir(lgr_input_folder):
+	print(file)
+	if file.endswith(".txt"):
+		with open(os.path.join(lgr_input_folder,file)) as f:
+			if "BEGIN PGP MESSAGE" in f.read():
+				print("found text \" BEGIN PGP MESSAGE \", will clean file")
+				f_new = open(os.path.join(lgr_input_folder, file.strip(".txt")) + "_cleaned.txt",'w+')
+				for line in f:
+					print("1)
+					if "-----BEGIN PGP MESSAGE-----" not in line:
+						print("writing")
+						f_new.write(line)
+					else:
+						break
+				print("successfully cleaned " + file)
+				f.close()
+				os.remove(os.path.join(lgr_input_folder,file))
+				file = file.strip(".txt") + "_cleaned.txt"
+				f_new.close()
+		if first:
+			lgr_data = pd.read_csv(os.path.join(lgr_input_folder,file), delimiter=',', header = 1, index_col = 1)
+			first = False
+		else:
+				lgr_data.append(pd.read_csv(os.path.join(lgr_input_folder,file), delimiter=',', header = 1, index_col = 1))
+		print(lgr_data)
 exit()
 sample_id = '2020_07-30_Vault-Lake_Buckt-T1'
+
 
 # #submersion depth in water or snow (cm)
 # #If multiple measurements are used in uneven surfaces, enter them in the mean field separated by comma
