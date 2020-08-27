@@ -23,8 +23,8 @@ cwd = os.getcwd()
 lgr_output_folder = os.path.join(cwd, "outputs","lgr")
 lgr_input_folder = os.path.join(cwd, "inputs","lgr")
 weather_input_folder = os.path.join(cwd, "inputs", "weather") 
-print("pulling lgr data from: \n" + lgr_output_folder + "\n")
-print("pulling weather data, when not from internet, from: \n" + lgr_input_folder + "\n")
+print("pulling lgr data from: \n" + lgr_input_folder + "\n")
+print("pulling weather data, when not from internet, from: \n" + weather_input_folder + "\n")
 
 #read the excel file for the input. Close the file before reading it.
 master_csv_path = os.path.join(cwd, "data","simon_masters.xlsx")
@@ -38,28 +38,35 @@ first = True
 for file in os.listdir(lgr_input_folder):
 	print(file)
 	if file.endswith(".txt"):
-		with open(os.path.join(lgr_input_folder,file)) as f:
-			if "BEGIN PGP MESSAGE" in f.read():
+		with open(os.path.join(lgr_input_folder,file),'r') as f:
+			file_text = f.read()
+			if "BEGIN PGP MESSAGE" in file_text:
 				print("found text \" BEGIN PGP MESSAGE \", will clean file")
-				f_new = open(os.path.join(lgr_input_folder, file.strip(".txt")) + "_cleaned.txt",'w+')
-				for line in f:
-					print("1)
-					if "-----BEGIN PGP MESSAGE-----" not in line:
-						print("writing")
-						f_new.write(line)
-					else:
-						break
-				print("successfully cleaned " + file)
 				f.close()
-				os.remove(os.path.join(lgr_input_folder,file))
-				file = file.strip(".txt") + "_cleaned.txt"
-				f_new.close()
+				with open(os.path.join(lgr_input_folder, file),'r') as f:
+					lines = f.readlines()
+					f_new = open(os.path.join(lgr_input_folder, file.strip(".txt")) + "_cleaned.txt",'w+')
+					for line in lines:
+						print("line")
+						if "-----BEGIN PGP MESSAGE-----" not in line:
+							print("writing")
+							f_new.write(line)
+						else:
+							break
+					print("successfully cleaned " + file)
+					f.close()
+					os.remove(os.path.join(lgr_input_folder,file))
+					file = file.strip(".txt") + "_cleaned.txt"
+					f_new.close()
 		if first:
 			lgr_data = pd.read_csv(os.path.join(lgr_input_folder,file), delimiter=',', header = 1, index_col = 1)
 			first = False
 		else:
-				lgr_data.append(pd.read_csv(os.path.join(lgr_input_folder,file), delimiter=',', header = 1, index_col = 1))
+			print("appending data")
+			new_data = pd.read_csv(os.path.join(lgr_input_folder,file), delimiter=',', header = 1, index_col = 1)
+			lgr_data = lgr_data.append(new_data)
 		print(lgr_data)
+#TODO- print the total lgr data into a nice csv :)
 exit()
 sample_id = '2020_07-30_Vault-Lake_Buckt-T1'
 
