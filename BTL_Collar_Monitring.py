@@ -23,12 +23,14 @@ cwd = os.getcwd()
 lgr_output_folder = os.path.join(cwd, "outputs","lgr")
 lgr_input_folder = os.path.join(cwd, "inputs","lgr")
 weather_input_folder = os.path.join(cwd, "inputs", "weather") 
-print("pulling lgr data from: \n" + lgr_input_folder + "\n")
+print("pulling lgr data from: \n" + lgr_input_folder)
 print("pulling weather data, when not from internet, from: \n" + weather_input_folder + "\n")
 
 #read the excel file for the input. Close the file before reading it.
 master_csv_path = os.path.join(cwd, "data","simon_masters.xlsx")
 master_data = pd.read_excel(master_csv_path, header = 0) #headers are the first row
+print("using as master spreadsheet:\n" + master_csv_path)
+print("The master data sheet:")
 print(master_data)
 
 
@@ -47,9 +49,7 @@ for file in os.listdir(lgr_input_folder):
 					lines = f.readlines()
 					f_new = open(os.path.join(lgr_input_folder, file.strip(".txt")) + "_cleaned.txt",'w+')
 					for line in lines:
-						print("line")
 						if "-----BEGIN PGP MESSAGE-----" not in line:
-							print("writing")
 							f_new.write(line)
 						else:
 							break
@@ -57,6 +57,7 @@ for file in os.listdir(lgr_input_folder):
 					f.close()
 					os.remove(os.path.join(lgr_input_folder,file))
 					file = file.strip(".txt") + "_cleaned.txt"
+					print("removed old file, created " + file)
 					f_new.close()
 		if first:
 			lgr_data = pd.read_csv(os.path.join(lgr_input_folder,file), delimiter=',', header = 1, index_col = 1)
@@ -65,8 +66,32 @@ for file in os.listdir(lgr_input_folder):
 			print("appending data")
 			new_data = pd.read_csv(os.path.join(lgr_input_folder,file), delimiter=',', header = 1, index_col = 1)
 			lgr_data = lgr_data.append(new_data)
-		print(lgr_data)
+		print("size of total LGR data array: " + str(lgr_data.shape))
+			
 #TODO- print the total lgr data into a nice csv :)
+
+
+#now we will create a new array with the times that we would like to add to the list
+#make a for loop to run through the data which has not already been run by the program
+torun_rows = []
+for row in range(master_data.shape[0]):
+	print(master_data.iloc[row]['program_run?'])
+	if master_data.iloc[row]['program_run?'] != 'y':
+		torun_rows.append(row)
+print("the rows that will be run, starting at index 0:")
+print(torun_rows)
+print("will run the program for a total of " + str(len(torun_rows)) + " times")
+
+for row in torun_rows:
+	#create the sample ID. The format is:
+	#yyyy-mm-dd_hh:mm:ss_location_collection-instrument
+	#where the hh:mm:ss is the START TIME
+	sample_ID = ""
+	if master_data.iloc[row]["date_(yyyy-mm-dd)"] != np.nan:
+		sample_ID = master_data.iloc[row]["date_(yyyy-mm-dd)"]
+	else:
+		print("need a date!!!!")
+		exit()
 exit()
 sample_id = '2020_07-30_Vault-Lake_Buckt-T1'
 
