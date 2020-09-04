@@ -8,6 +8,7 @@ import pandas as pd
 import os
 from pathlib import Path
 from math import *
+import datetime
 
 #########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 #########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
@@ -17,7 +18,8 @@ from math import *
 #08/20/2020
 
 #TODO- make sample ID print to command line, automatically create the ID tag
-
+#string names of the valid measurement devices:
+measurement_devices = ["bucket", "chamber"]
 #current working directory
 cwd = os.getcwd()
 lgr_output_folder = os.path.join(cwd, "outputs","lgr")
@@ -29,6 +31,9 @@ print("pulling weather data, when not from internet, from: \n" + weather_input_f
 #read the excel file for the input. Close the file before reading it.
 master_csv_path = os.path.join(cwd, "data","simon_masters.xlsx")
 master_data = pd.read_excel(master_csv_path, header = 0) #headers are the first row
+#apparently excel formats their data with the dates also including a timestamp. Annoying
+master_data["date_(yyyy-mm-dd)"] = master_data["date_(yyyy-mm-dd)"].apply(lambda x: x.date().isoformat())
+
 print("using as master spreadsheet:\n" + master_csv_path)
 print("The master data sheet:")
 print(master_data)
@@ -69,6 +74,8 @@ for file in os.listdir(lgr_input_folder):
 		print("size of total LGR data array: " + str(lgr_data.shape))
 			
 #TODO- print the total lgr data into a nice csv :)
+#Make the lgr date index with date and time
+lgr_data.index = pd.DatetimeIndex(lgr_data.index)
 
 
 #now we will create a new array with the times that we would like to add to the list
@@ -82,16 +89,44 @@ print("the rows that will be run, starting at index 0:")
 print(torun_rows)
 print("will run the program for a total of " + str(len(torun_rows)) + " times")
 
+
+#dictionary with the rows as keys and the sample IDs as values
+row_ID = {}
 for row in torun_rows:
 	#create the sample ID. The format is:
 	#yyyy-mm-dd_hh:mm:ss_location_collection-instrument
 	#where the hh:mm:ss is the START TIME
 	sample_ID = ""
 	if master_data.iloc[row]["date_(yyyy-mm-dd)"] != np.nan:
-		sample_ID = master_data.iloc[row]["date_(yyyy-mm-dd)"]
+		sample_ID = str(master_data.iloc[row]["date_(yyyy-mm-dd)"])
+		print(sample_ID)
 	else:
-		print("need a date!!!!")
+		print("need a date for row: " + str(row))
 		exit()
+	if isinstance(master_data.iloc[row]["start_time_(hh:mm:ss)"], datetime.time):
+		sample_ID = sample_ID + "_" + str(master_data.iloc[row]["start_time_(hh:mm:ss)"])
+	else:
+		print("no start time found for row: " + str(row))
+		exit()
+	if not isinstance(master_data.iloc[row]["stop_time_(hh:mm:ss)"], datetime.time):
+		print("no stop time found for row: " + str(row))
+		exit()
+	if master_data.iloc[row]["location_(lake)"] != np.nan:
+		sample_ID = sample_ID + "_" + str(master_data.iloc[row]["location_(lake)"])
+	else:
+		print("no location for row: " + str(row))
+		sample_ID = sample_ID + "_unentered"
+	if master_data.iloc[row]["measurement_device"] not in measurement_devices:
+		print("invalid measurement_device: " + str(master_data.iloc[row]["measurement_device"]))
+		print("found in row: " + str(row))
+		exit()
+	else:
+		sample_ID = sample_ID + "_" + str(master_data.iloc[row]["measurement_device"])
+	print(sample_ID)
+	row_ID.update({row:sample_ID})
+
+print(row_ID)
+
 exit()
 sample_id = '2020_07-30_Vault-Lake_Buckt-T1'
 
