@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 from math import *
 import datetime
+from slope_analysis import *
 
 #########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 #########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
@@ -22,7 +23,7 @@ import datetime
 measurement_devices = ["bucket", "chamber"]
 #current working directory
 cwd = os.getcwd()
-lgr_output_folder = os.path.join(cwd, "outputs","lgr")
+output_folder = os.path.join(cwd,"outputs")
 lgr_input_folder = os.path.join(cwd, "inputs","lgr")
 weather_input_folder = os.path.join(cwd, "inputs", "weather") 
 print("pulling lgr data from: \n" + lgr_input_folder)
@@ -99,7 +100,6 @@ for row in torun_rows:
 	sample_ID = ""
 	if master_data.iloc[row]["date_(yyyy-mm-dd)"] != np.nan:
 		sample_ID = str(master_data.iloc[row]["date_(yyyy-mm-dd)"])
-		print(sample_ID)
 	else:
 		print("need a date for row: " + str(row))
 		exit()
@@ -122,9 +122,9 @@ for row in torun_rows:
 		exit()
 	else:
 		sample_ID = sample_ID + "_" + str(master_data.iloc[row]["measurement_device"])
-	print(sample_ID)
 	row_ID.update({row:sample_ID})
 
+print("will run the following sample IDs:")
 print(row_ID)
 
 exit()
