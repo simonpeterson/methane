@@ -11,7 +11,7 @@ from math import *
 import datetime
 
 
-def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values)
+def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas_to_read):
 	'''program that analyzes the slope and performs fitting'''
 	#get the start and stop times from the file
 	start_time = master_data.iloc[row]["start_time_(hh:mm:ss)"]
@@ -23,82 +23,42 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values)
 	# #submersion depth in water or snow (cm)
 	# #If multiple measurements are used in uneven surfaces, enter them in the mean field separated by comma
 	# #when not submerged, (i.e. with collars) enter "0"
-	sub_d = np.mean([0])
-
+	sub_d = float(master_data.iloc[row]["submerged_depth(cm)"])
 	# #Exposed height of chamber/bucket above surface (cm)
 	# #If multiple measurements are used in uneven surfaces, enter them in the mean field separated by comma
-	xh = np.mean([34.5])-sub_d
+	xh = float(master_data.iloc[row]["exposed_height(cm)"])-sub_d
+	collar_h = float(master_data.iloc[row]["collar_height(cm)"])
 
-	# #collar height above surface (cm) (for use with big chamber and collars)
-	# #when partially submerged (non-collar measurements), comment out 1st "collar_h" (the one that subtracts the collar plunge depth, 3.53), and 
-	# #uncomment the 2nd "collar_h" with a mean of "0"
-	#collar_h = meancollar-3.53
-	#collar_h = np.mean([0])
-
-	#Atmospheric Pressure (inHg)
-	#https://www.wunderground.com/dashboard/pws/KAKFAIRB30/graph/2019-03-6/2019-03-6/daily
-	#time of pressure reading: 12:04
-	#P_inHg = 29.92
-	########################################################################
-
-
-	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	#Pressure data from Big Trail Tower Data file(units of Pa)
-	dfp = pd.read_csv(r'C:\Users\Simon\Documents\methane\June2019_T_P.csv', delimiter=',', parse_dates=[['date','time']])
-	P_Pa = dfp.loc[dfp['date_time'] == '6/11/2019 0:00','air_p_mean_Pa'].values
-	########################################################################
-
-
-	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	# Enter LGR data file path 
-	# Read the text file and select a time section
-	#*****Sometimes "index_col = 1 instead of 0"********
-	df = pd.read_csv(r'C:\Users\Simon\Documents\methane\gga_2020-07-30_f0001.txt', delimiter=',', header = 1, index_col = 1)
-	########################################################################
-
-
-	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	#Start and stop time of chamber measurment in HH:MM:SS (24-hour time)
-
-	time0 = "17:12:20"
-	time1 = "17:15:30"
-
-	########################################################################
-
-	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	#
-	# Don't forget to assign output log file at the end of this notebook!!!
-	#
-	########################################################################
-
-	df.index = pd.DatetimeIndex(df.index)
-	df.index
-	df.keys()
-	df.head()
-
-
-	#Choose data series (i.e. methane dry mole fraction and gas temperature, CH4d_ppm and GasT_C)
-	ts          = df.between_time(start_time = "{}".format(time0), end_time = "{}".format(time1))['          [CO2]d_ppm']#.plot()
-	temperature = df.between_time(start_time = "{}".format(time0), end_time = "{}".format(time1))['              GasT_C']#.plot()
-
-
+	#TODO- add the pressure data to the file
+	
+	#lgr_datap = pd.read_csv(r'C:\Users\Simon\Documents\methane\June2019_T_P.csv', delimiter=',', parse_dates=[['date','time']])
+	#P_Pa = lgr_datap.loc[lgr_datap['date_time'] == '6/11/2019 0:00','air_p_mean_Pa'].values
+	
+	#lgr_data.index = pd.DatetimeIndex(lgr_data.index)
+	#lgr_data.index
+	#lgr_data.keys()
+	#lgr_data.head()
+	
+	#get the date to get the actual pressure dataS
+	master_data.iloc[row]["date_(yyyy-mm-dd)"]
+	#the gas to read needs to be in the format:
+	#[gas]d_ppm
+	#while being right adjusted 20 spaces
+	ts = ""
+	print(('[' + gas_to_read + ']d_ppm').rjust(20))
+	ts          = lgr_data.between_time(start_time = "{}".format(start_time), end_time = "{}".format(stop_time))[('[' + gas_to_read + ']d_ppm').rjust(20)]
+	temperature = lgr_data.between_time(start_time = "{}".format(start_time), end_time = "{}".format(stop_time))['              GasT_C']#.plot()
+	
 	#Plot the raw LGR data for the measurement window
 	ts = xr.DataArray(ts, coords = [ts.index], dims = ['time'])
 	ts.plot()
+	print(ts)
+	plt.show()
 
 	temperature_mean = xr.DataArray(temperature, coords = [temperature.index], dims = ['time']).mean().data
 	temperature_error = temperature.std() + 1
-
-
-	# In[78]:
-
-
-	df.head()
-
+	#lgr_data.head()
+	type(temperature_mean)
 
 	# In[75]:
 
@@ -107,59 +67,57 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values)
 	# # #A snow density is assumed from literature values, and the snow water equivalent is calculated to 
 	# # #correct for the snow's porosity in the chamber
 	# # #Conditions for snow or sediment height estimation
-	# if xh <= 5:
-	#     xh_error = xh*0.5
-	# else :
-	#      xh_error = xh*0.2
+	if xh <= 5:
+	    xh_error = xh*0.5
+	else :
+	     xh_error = xh*0.2
 
-	# #Chamber dimensions for white buckets (units of cm)
-	# h = 34.5
-	# diam_top = 25.8
-	# r_top = diam_top/2
+	diam_top = 25.8
+	r_top = diam_top/2
 
-	# # #"bottom" here is actually the top of the bucket. Because when modelling a truncated cone, it's 
-	# # #easier to think of the bottom as the base with the larger radius
+	# #"bottom" here is actually the top of the bucket. Because when modelling a truncated cone, it's 
+	# #easier to think of the bottom as the base with the larger radius
 	# diam_bottom = 29
 	# r_bottom = diam_bottom/2
 
-	# # #lid volume (cm^3)
-	# lid_vol = 975
-	# lid_vol_error = lid_vol* 0.01
+	# #lid volume (cm^3)
+	lid_vol = 975
+	lid_vol_error = lid_vol* 0.01
 
-	# # #tubing dimensions (cm, cm^3 for t_vol)
-	# t_length = 914.4
-	# t_length_error = t_length * 0.05
-	# t_id = 0.3175
-	# t_vol = pi*((t_id/2)**2)*t_length
-	# t_vol_error = t_length_error * abs(t_id)
+	# #tubing dimensions (cm, cm^3 for t_vol)
+	t_length = 914.4
+	t_length_error = t_length * 0.05
+	t_id = 0.3175
+	t_vol = pi*((t_id/2)**2)*t_length
+	t_vol_error = t_length_error * abs(t_id)
 
-	# # #LGR cell volume (cm^3)
-	# LGR_vol = 335
-	# LGR_vol_error = LGR_vol*0.01
+	# #LGR cell volume (cm^3)
+	LGR_vol = 335
+	LGR_vol_error = LGR_vol*0.01
 
-	# # #Volume of Chamber (as a truncated cone) (cm^3)
+	# #Volume of Chamber (as a truncated cone) (cm^3)
 	# vol = pi*h*(r_bottom**2 + r_top**2 + r_bottom*r_top)/3
 
-	# # #Normal Height (height from center of bottom base to apex of the imaginary cone) (cm)
+	#Normal Height (height from center of bottom base to apex of the imaginary cone) (cm)
 	# n_height = h + ((h*r_top)/(r_bottom - r_top))
 
-	# # #Volume of Normal cone (if chamber were not truncated, i.e. bucket-shaped)(cm^3)
+	#Volume of Normal cone (if chamber were not truncated, i.e. bucket-shaped)(cm^3)
 	# cone_volume = (1/3)*pi*(r_bottom**2)*n_height
 
-	# # #Volume of the imaginary cone (the volume that is removed/truncated to form the bucket shape)(cm^3)
+	#Volume of the imaginary cone (the volume that is removed/truncated to form the bucket shape)(cm^3)
 	# imagine_volume = (1/3)*pi*(r_top**2)*(n_height - h)
 
-	# # #Hypotenuse of Normal cone (cm)
+	#Hypotenuse of Normal cone (cm)
 	# hypo_cone = sqrt((r_bottom**2)+(n_height**2))
 
-	# # #angle of normal cone apothems (radians)
+	#angle of normal cone apothems (radians)
 	# angle = (asin(r_bottom/hypo_cone))*2
 
-	# # #Normal height of Snow Cone (cm)
+	#Normal height of Snow Cone (cm)
 	# n_height_snow = (n_height - h) + (h - xh)
 	# n_height_snow_error = xh_error
 
-	# # #exterior angle *between snow level and the side of bucket (downward) (degrees)
+	#exterior angle *between snow level and the side of bucket (downward) (degrees)
 	# ex_angle = 180 - ((angle*(180/pi))/2) - 90
 
 	# # #Hypotenuse of Snow cone (cm)
@@ -210,239 +168,244 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values)
 
 	# In[46]:
 
-
+	
 	# This section is optimized for the "bucket chambers" in saturated sediments. 
 	# snow density calculations are not required 
+	print("calculating size")
+	if master_data.iloc[row]["measurement_device"] == "bucket":
+		print("using bucket in sediment calculation")
+		#Chamber dimensions for white buckets (units of cm)
+		h = 34.5
+		diam_top = 25.8
+		r_top = diam_top/2
 
-	#Chamber dimensions for white buckets (units of cm)
-	h = 34.5
-	diam_top = 25.8
-	r_top = diam_top/2
+		# "bottom" here is actually the top of the bucket. Because when modelling a truncated cone, it's 
+		# easier to think of the bottom as the base with the larger radius
+		diam_bottom = 29
+		r_bottom = diam_bottom/2
 
-	# "bottom" here is actually the top of the bucket. Because when modelling a truncated cone, it's 
-	# easier to think of the bottom as the base with the larger radius
-	diam_bottom = 29
-	r_bottom = diam_bottom/2
+		#lid volume (cm^3)
+		lid_vol = 975
+		lid_vol_error = lid_vol* 0.01
 
-	#lid volume (cm^3)
-	lid_vol = 975
-	lid_vol_error = lid_vol* 0.01
+		#tubing dimensions (cm, cm^3 for t_vol)
+		t_length = 914.4
+		t_length_error = t_length * 0.05
+		t_id = 0.3175
+		t_vol = pi*((t_id/2)**2)*t_length
+		t_vol_error = t_length_error * abs(t_id)
 
-	#tubing dimensions (cm, cm^3 for t_vol)
-	t_length = 914.4
-	t_length_error = t_length * 0.05
-	t_id = 0.3175
-	t_vol = pi*((t_id/2)**2)*t_length
-	t_vol_error = t_length_error * abs(t_id)
+		#LGR cell volume (cm^3)
+		LGR_vol = 335
+		LGR_vol_error = LGR_vol*0.01
 
-	#LGR cell volume (cm^3)
-	LGR_vol = 335
-	LGR_vol_error = LGR_vol*0.01
+		#Volume of Chamber (as a truncated cone) (cm^3)
+		vol = pi*h*(r_bottom**2 + r_top**2 + r_bottom*r_top)/3
 
-	#Volume of Chamber (as a truncated cone) (cm^3)
-	vol = pi*h*(r_bottom**2 + r_top**2 + r_bottom*r_top)/3
+		#Normal Height (height from center of bottom base to apex of the imaginary cone) (cm)
+		n_height = h + ((h*r_top)/(r_bottom - r_top))
 
-	#Normal Height (height from center of bottom base to apex of the imaginary cone) (cm)
-	n_height = h + ((h*r_top)/(r_bottom - r_top))
+		#Volume of Normal cone (if chamber were not truncated, i.e. bucket-shaped)(cm^3)
+		cone_volume = (1/3)*pi*(r_bottom**2)*n_height
 
-	#Volume of Normal cone (if chamber were not truncated, i.e. bucket-shaped)(cm^3)
-	cone_volume = (1/3)*pi*(r_bottom**2)*n_height
+		#Volume of the imaginary cone (the volume that is removed/truncated to form the bucket shape)(cm^3)
+		imagine_volume = (1/3)*pi*(r_top**2)*(n_height - h)
 
-	#Volume of the imaginary cone (the volume that is removed/truncated to form the bucket shape)(cm^3)
-	imagine_volume = (1/3)*pi*(r_top**2)*(n_height - h)
+		#Hypotenuse of Normal cone (cm)
+		hypo_cone = sqrt((r_bottom**2)+(n_height**2))
 
-	#Hypotenuse of Normal cone (cm)
-	hypo_cone = sqrt((r_bottom**2)+(n_height**2))
+		#angle of normal cone apothems (radians)
+		angle = (asin(r_bottom/hypo_cone))*2
 
-	#angle of normal cone apothems (radians)
-	angle = (asin(r_bottom/hypo_cone))*2
+		#Normal height of sediment Cone (cm)
+		n_height_sed = (n_height - h) + (h - xh)
+		n_height_sed_error = xh_error
 
-	#Normal height of sediment Cone (cm)
-	n_height_sed = (n_height - h) + (h - xh)
-	n_height_sed_error = xh_error
+		#exterior angle *between sediment level and the side of bucket (downward) (degrees)
+		ex_angle = 180 - ((angle*(180/pi))/2) - 90
 
-	#exterior angle *between sediment level and the side of bucket (downward) (degrees)
-	ex_angle = 180 - ((angle*(180/pi))/2) - 90
+		#Hypotenuse of sediment cone (cm)
+		hypo_sed = (n_height_sed/cos(angle/2))
+		hypo_sed_error = n_height_sed_error*abs((cos(angle/2)))
 
-	#Hypotenuse of sediment cone (cm)
-	hypo_sed = (n_height_sed/cos(angle/2))
-	hypo_sed_error = n_height_sed_error*abs((cos(angle/2)))
+		#Radius of top of sediment (cm)
+		r_sed = sqrt((hypo_sed**2)-(n_height_sed**2))
+		r_sed_error = 2*(hypo_sed_error/abs(hypo_sed))*abs(r_sed) + 2*(n_height_sed_error/abs(n_height_sed))*abs(r_sed)
 
-	#Radius of top of sediment (cm)
-	r_sed = sqrt((hypo_sed**2)-(n_height_sed**2))
-	r_sed_error = 2*(hypo_sed_error/abs(hypo_sed))*abs(r_sed) + 2*(n_height_sed_error/abs(n_height_sed))*abs(r_sed)
+		#Volume of sediment cone (cm^3)
+		sed_cone_volume = (1/3)*pi*(r_sed**2)*(n_height_sed)
+		sed_cone_volume_error = (sqrt((r_sed_error/r_sed)**2 + (n_height_sed_error/n_height_sed)**2))*abs(pi/3)
 
-	#Volume of sediment cone (cm^3)
-	sed_cone_volume = (1/3)*pi*(r_sed**2)*(n_height_sed)
-	sed_cone_volume_error = (sqrt((r_sed_error/r_sed)**2 + (n_height_sed_error/n_height_sed)**2))*abs(pi/3)
+		#Uncorrected Volume of sediment in Chamber (non-porous snow) (cm^3)
+		un_sed_vol = sed_cone_volume - imagine_volume
+		un_sed_vol_error = sed_cone_volume_error
 
-	#Uncorrected Volume of sediment in Chamber (non-porous snow) (cm^3)
-	un_sed_vol = sed_cone_volume - imagine_volume
-	un_sed_vol_error = sed_cone_volume_error
+		#Snow bulk density (g/cm^3) Sturm et al. 2010 Journal of Hydrometeorology
+		#Mean = 0.217 g/cm^3 Taken from 1541 observations in Alaskan/Canadian Taiga
+		#Std = 0.056 g/cm^3
+		pb = 0.217
+		pb_error = 0.056
 
-	#Snow bulk density (g/cm^3) Sturm et al. 2010 Journal of Hydrometeorology
-	#Mean = 0.217 g/cm^3 Taken from 1541 observations in Alaskan/Canadian Taiga
-	#Std = 0.056 g/cm^3
-	pb = 0.217
-	pb_error = 0.056
+		#Snow water equivalent (cm)
+		swe = (h - xh)*(pb/1)
+		swe_error = sqrt((xh_error/xh)**2 + (pb_error/pb)**2)
 
-	#Snow water equivalent (cm)
-	swe = (h - xh)*(pb/1)
-	swe_error = sqrt((xh_error/xh)**2 + (pb_error/pb)**2)
+		#Corrected volume of snow (cylinder since "top" base of bucket is pushed into snow)(cm^3)
+		corrected_snow_vol = pi*(r_top**2)*swe
+		corrected_snow_vol_error = swe_error *abs(pi*(r_top**2))
 
-	#Corrected volume of snow (cylinder since "top" base of bucket is pushed into snow)(cm^3)
-	corrected_snow_vol = pi*(r_top**2)*swe
-	corrected_snow_vol_error = swe_error *abs(pi*(r_top**2))
+		#Total volume(cm^3)
+		total_vol = vol -un_sed_vol + lid_vol + t_vol + LGR_vol
+		total_vol_error = un_sed_vol_error + lid_vol_error + t_vol_error + LGR_vol_error
 
-	#Total volume(cm^3)
-	total_vol = vol -un_sed_vol + lid_vol + t_vol + LGR_vol
-	total_vol_error = un_sed_vol_error + lid_vol_error + t_vol_error + LGR_vol_error
+		#Total volume corrected (accounting for swe-based snow volume)(cm^3)
+		total_vol_corr = vol - corrected_snow_vol + lid_vol + t_vol + LGR_vol
+		total_vol_corr_error = corrected_snow_vol_error + lid_vol_error+ t_vol_error + LGR_vol_error
 
-	#Total volume corrected (accounting for swe-based snow volume)(cm^3)
-	total_vol_corr = vol - corrected_snow_vol + lid_vol + t_vol + LGR_vol
-	total_vol_corr_error = corrected_snow_vol_error + lid_vol_error+ t_vol_error + LGR_vol_error
+		#Convert total corrected volume to liters (L)
+		V = total_vol / 1000
+		V_error = total_vol_error / 1000
 
-	#Convert total corrected volume to liters (L)
-	V = total_vol / 1000
-	V_error = total_vol_error / 1000
+		#Surface area of chamber opening (m^2)
+		area = pi*(r_top**2)/10000
+	elif master_data.iloc[row]["measurement_device"] == "chamber":
+		# This section is optimized for the "large square chambers" rested on aluminum collar locations. 
+		# density calculations are not required 
+		print("running chamber")
+		#Chamber dimensions for large clear chamber (units of cm)
+		h = 106.5 - float(sub_d)
+		w = 65.7
+		d = 65.7
+		vol = h*w*d
+		vol_error = vol * 0.05
+		xh = h + collar_h
 
-	#Surface area of chamber opening (m^2)
-	area = pi*(r_top**2)/10000
+		#Collar dimensions (units of cm)
+		collar_w = 70.7
+		collar_d = 70.7
+		collar_vol = collar_h*collar_w*collar_d
+		collar_vol_error = collar_vol * 0.05
 
+		#tubing dimensions (cm, cm^3 for t_vol)
+		t_length = 914.4
+		t_length_error = t_length * 0.05
+		t_id = 0.3175
+		t_vol = pi*((t_id/2)**2)*t_length
+		t_vol_error = t_length_error * abs(t_id)
 
-	# In[47]:
+		#LGR cell volume (cm^3)
+		LGR_vol = 335
+		LGR_vol_error = LGR_vol*0.01
 
+		#Snow bulk density (g/cm^3) Sturm et al. 2010 Journal of Hydrometeorology
+		#Mean = 0.217 g/cm^3 Taken from 1541 observations in Alaskan/Canadian Taiga
+		#Std = 0.056 g/cm^3
+		pb = 0.217
+		pb_error = 0.056
 
-	# # This section is optimized for the "large square chambers" rested on aluminum collar locations. 
-	# # density calculations are not required 
+		#Snow water equivalent (cm)
+		swe = (h - xh)*(pb/1)
+		swe_error = sqrt((xh_error/xh)**2 + (pb_error/pb)**2)
 
-	# #Chamber dimensions for large clear chamber (units of cm)
-	# h = 106.5 - sub_d
-	# w = 65.7
-	# d = 65.7
-	# vol = h*w*d
-	# vol_error = vol * 0.05
-	# xh = h + collar_h
+		#Corrected volume of snow (cylinder since "top" base of bucket is pushed into snow)(cm^3)
+		corrected_snow_vol = pi*(r_top**2)*swe
+		corrected_snow_vol_error = swe_error *abs(pi*(r_top**2))
 
-	# #Collar dimensions (units of cm)
-	# collar_w = 70.7
-	# collar_d = 70.7
-	# collar_vol = collar_h*collar_w*collar_d
-	# collar_vol_error = collar_vol * 0.05
+		#Total volume(cm^3)
+		total_vol = vol + t_vol + LGR_vol + collar_vol
+		total_vol_error = vol_error + t_vol_error + LGR_vol_error + collar_vol_error
 
-	# #tubing dimensions (cm, cm^3 for t_vol)
-	# t_length = 914.4
-	# t_length_error = t_length * 0.05
-	# t_id = 0.3175
-	# t_vol = pi*((t_id/2)**2)*t_length
-	# t_vol_error = t_length_error * abs(t_id)
+		#Convert total corrected volume to liters (L)
+		V = total_vol / 1000
+		V_error = total_vol_error / 1000
 
-	# #LGR cell volume (cm^3)
-	# LGR_vol = 335
-	# LGR_vol_error = LGR_vol*0.01
-
-	# #Snow bulk density (g/cm^3) Sturm et al. 2010 Journal of Hydrometeorology
-	# #Mean = 0.217 g/cm^3 Taken from 1541 observations in Alaskan/Canadian Taiga
-	# #Std = 0.056 g/cm^3
-	# pb = 0.217
-	# pb_error = 0.056
-
-	# #Snow water equivalent (cm)
-	# swe = (h - xh)*(pb/1)
-	# swe_error = sqrt((xh_error/xh)**2 + (pb_error/pb)**2)
-
-	# #Corrected volume of snow (cylinder since "top" base of bucket is pushed into snow)(cm^3)
-	# corrected_snow_vol = pi*(r_top**2)*swe
-	# corrected_snow_vol_error = swe_error *abs(pi*(r_top**2))
-
-	# #Total volume(cm^3)
-	# total_vol = vol + t_vol + LGR_vol + collar_vol
-	# total_vol_error = vol_error + t_vol_error + LGR_vol_error + collar_vol_error
-
-	# #Convert total corrected volume to liters (L)
-	# V = total_vol / 1000
-	# V_error = total_vol_error / 1000
-
-	# #Surface area of collar opening (m^2)
-	# area = (collar_w*collar_d)/10000
-
-
-	# In[48]:
-
-
+		#Surface area of collar opening (m^2)
+		area = (collar_w*collar_d)/10000
+	else:
+		print("not a valid chamber, please double check")
+		exit()
 	# As a sanity check, print the volume of the chamber/bucket and it's error in liters
 	print('volume = ', V, ' ±',  V_error,  ' liters')
-
-
+	
 	# Goal: 
 	# We find sections in the observation window which are
 	# 1. at least 50 seconds long and no more than 210 (50 < n > 210)
 	# 2. the linear slope of the section should fit the data with R2 0.985. WHich means 98% of the variation in data can be explained by our model. 
 	# 
 	# Algorithm:
-	# We start with a section of first 210 points from the section window. We fit a line to the section and compute the errors as the squareroot of the diagnols of the covariance matrix between the model and data. We also compute R2 between the slope and the data and if R2 is greater than 0.985, we stop, since we got the largest continuous section which fulfils the requirement. i.e. our best case scenario! If we don't get a valid slope value, we shift the section by 1. i.e. from the second element to 211th element in the section window and repeat the process. If we don't get a valid slope even after shifting through the entire length of the section window, we reduce the section length to 209 and start sliding. So on until we reduce the section length to its lowest threshold, i.e. 50. 
+	# We start with a section of first 210 points from the section window.
+	# We fit a line to the section and compute the errors as the squareroot of the diagnols of the covariance matrix between the model and data.
+	# We also compute R2 between the slope and the data and if R2 is greater than 0.985, we stop, since we got the largest continuous section which fulfils the requirement.
+	# i.e. our best case scenario! If we don't get a valid slope value, we shift the section by 1. i.e. from the second element to 211th element in the section window and repeat the process.
+	# If we don't get a valid slope even after shifting through the entire length of the section window, we reduce the section length to 209 and start sliding. 
+	# So on until we reduce the section length to its lowest threshold, i.e. 50. 
 	# 
 	# If we still don't get a valid value for the smallest section, we start smoothing the sections by 5, 10, and ultimately 15-point moving windows. 
-
-	# In[49]:
-
-
+	#CHANGES BY SIMON PETERSON 09.09.20
+	# Make the R2 value 
 	# In[]
 	# Set data quality thresholds
 	min_section_length_original = 45
 	max_section_length = 210
-	r_2_threshold = 0.985
+	# r_2_threshold = 0.985
 	#starting smoothing window
 	smoothing_window = 0
 	########################################################################
-
 	section_length   = np.arange(min_section_length_original,max_section_length+1)[::-1]
-	valid_section_length, slope, a, R_squared = brain(section_length, ts)
-	if slope:
-					print('valid section length = %.3f' %valid_section_length)
-					print('Smoothing_window = %.3f' %smoothing_window)
+	for r_2_value in r_values:
+		print("running with r^2 of: " + str(r_2_value))
+		valid_section_length, slope, a, R_squared = brain(section_length, ts,r_2_value )
+		if slope:
+			print('valid section length = %.3f' %valid_section_length)
+			print('Smoothing_window = %.3f' %smoothing_window)
 	#                 print('Slope = %.4f' %slope)
 	#                 print('Temperature = %.3f' %temperature_mean)
 	#                 print('Section start timestamp = ' +str(a[0].time.data))
-	else:
-		smoothing_window  = 5
-		min_section_length = min_section_length_original*2
-		section_length   = np.arange(min_section_length,max_section_length+1)[::-1]
-		ts_smooth = ts.rolling(time = smoothing_window, center = True).mean().dropna(dim='time')
-		valid_section_length, slope, a, R_squared = brain(section_length, ts_smooth)
-		if slope:
-					print('valid section length = %.3f' %valid_section_length)
-					print('Smoothing_window = %.3f' %smoothing_window)
-	#                 print('Slope = %.4f' %slope)
-	#                 print('Temperature = %.3f' %temperature_mean)
-	#                 print('Section start timestamp = ' +str(a[0].time.data))    
+			break
 		else:
-			smoothing_window  = 10
-			min_section_length = int(min_section_length_original*2)
+			print("running with smoothing window of 5")
+			smoothing_window  = 5
+			min_section_length = min_section_length_original*2
 			section_length   = np.arange(min_section_length,max_section_length+1)[::-1]
 			ts_smooth = ts.rolling(time = smoothing_window, center = True).mean().dropna(dim='time')
 			valid_section_length, slope, a, R_squared = brain(section_length, ts_smooth)
 			if slope:
-					print('valid section length = %.3f' %valid_section_length)
-					print('Smoothing_window = %.3f' %smoothing_window)
-	#                 print('Slope = %.4f' %slope)
-	#                 print('Temperature = %.3f' %temperature_mean)
-	#                 print('Section start timestamp = ' +str(a[0].time.data))        
+				print('valid section length = %.3f' %valid_section_length)
+				print('Smoothing_window = %.3f' %smoothing_window)
+		#                 print('Slope = %.4f' %slope)
+		#                 print('Temperature = %.3f' %temperature_mean)
+		#                 print('Section start timestamp = ' +str(a[0].time.data))    
+				break
 			else:
-				smoothing_window  = 15
-				min_section_length = min_section_length_original*3
+				print("running with smoothing window of 10")
+				smoothing_window  = 10
+				min_section_length = int(min_section_length_original*2)
 				section_length   = np.arange(min_section_length,max_section_length+1)[::-1]
 				ts_smooth = ts.rolling(time = smoothing_window, center = True).mean().dropna(dim='time')
 				valid_section_length, slope, a, R_squared = brain(section_length, ts_smooth)
 				if slope:
 					print('valid section length = %.3f' %valid_section_length)
 					print('Smoothing_window = %.3f' %smoothing_window)
-	#                 print('Slope = %.4f' %slope)
-	#                 print('Temperature = %.3f' %temperature_mean)
-	#                 print('Section start timestamp = ' +str(a[0].time.data))
+		#                 print('Slope = %.4f' %slope)
+		#                 print('Temperature = %.3f' %temperature_mean)
+		#                 print('Section start timestamp = ' +str(a[0].time.data))        
+					break
 				else:
-					print('Oh no, bad data! Go back to field!!')
-	print(sample_id)
+					smoothing_window  = 15
+					min_section_length = min_section_length_original*3
+					section_length   = np.arange(min_section_length,max_section_length+1)[::-1]
+					ts_smooth = ts.rolling(time = smoothing_window, center = True).mean().dropna(dim='time')
+					valid_section_length, slope, a, R_squared = brain(section_length, ts_smooth)
+					if slope:
+						print('valid section length = %.3f' %valid_section_length)
+						print('Smoothing_window = %.3f' %smoothing_window)
+		#                 print('Slope = %.4f' %slope)
+		#                 print('Temperature = %.3f' %temperature_mean)
+		#                 print('Section start timestamp = ' +str(a[0].time.data))
+						break
+					else:
+						print('Oh no, bad data! Go back to field!!')
+		print(sample_id)
 	print('valid section length = %d' %valid_section_length)
 	print('Smoothing_window = %d' %smoothing_window)
 	print('Slope = %.5f ppm/s' %slope)
@@ -539,7 +502,7 @@ def compute_r2(ts_section, plot = False):
          plt.plot(y_hat)
 
      return r_square, slope
-def brain(section_length, ts):
+def brain(section_length, ts,r_2_threshold):
     for section_length in section_length:
         # print(section_length)
         r_2 = []
@@ -600,4 +563,3 @@ def get_slope_error(ts_section, plot = True):
 #             plt.plot(ts_section.time, y)
 #             plt.plot(ts_section.time, y_hat)
      return slope, slope_error, ts_section, y, y_hat
-	
