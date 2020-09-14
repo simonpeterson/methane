@@ -11,11 +11,21 @@ from math import *
 import datetime
 
 
-def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas_to_read):
+def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas_to_read,t_p_data):
 	'''program that analyzes the slope and performs fitting'''
 	#get the start and stop times from the file
 	start_time = master_data.iloc[row]["start_time_(hh:mm:ss)"]
 	stop_time = master_data.iloc[row]["stop_time_(hh:mm:ss)"]
+	#the pressure data- if the start time is not available, pull from 2019 data
+	#TOCHANGE- pull data from the actual date- is this a datetime object??
+	print(type(datetime.datetime.fromisoformat(master_data.iloc[row]["date_(yyyy-mm-dd)"])))
+	print(t_p_data['date_time'])
+	print(t_p_data.loc[t_p_data['date_time'].apply(lambda x: x.date()) == datetime.date.fromisoformat(master_data.iloc[row]["date_(yyyy-mm-dd)"]),'date_time'])
+	P_Pa = t_p_data.loc[t_p_data['date_time'] == datetime.datetime.fromisoformat('2019-06-11'),'air_p_mean_Pa'].values
+	print(datetime.datetime.fromisoformat('2019-06-11'))
+	print("printing P_Pa")
+	print(P_Pa)
+	
 	#the measurement device used
 	measurement_device = master_data.iloc[row]["measurement_device"]
 	
@@ -425,6 +435,8 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	P_error = P * 0.01
 	R = 0.082057338
 	moles = (P*V)/(R*(temperature_mean+273.15))
+	print(moles)
+	print(P_error)
 	moles_error = sqrt((P_error/P)**2 + (V_error/V)**2 + (temperature_error/(temperature_mean+273.15)**2))
 	flux = slope*moles/area
 	flux_error = (sqrt(slope_error/abs(slope))**2 + (moles_error/moles)**2)

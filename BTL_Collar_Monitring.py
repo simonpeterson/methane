@@ -34,9 +34,15 @@ master_csv_path = os.path.join(cwd, "data","simon_masters.xlsx")
 master_data = pd.read_excel(master_csv_path, header = 0) #headers are the first row
 #apparently excel formats their data with the dates also including a timestamp. Annoying
 master_data["date_(yyyy-mm-dd)"] = master_data["date_(yyyy-mm-dd)"].apply(lambda x: x.date().isoformat())
+
+
+print(master_data["date_(yyyy-mm-dd)"])
+
 #temperature and pressure data
-t_p_data = pd.read_csv(os.path.join(weather_input_folder, 'June2019_T_P.csv'), delimiter=',', parse_dates=[['date','time']])
-P_Pa = dfp.loc[dfp['date_time'] == '6/11/2019 0:00','air_p_mean_Pa'].values
+weather_input_filepath = os.path.join(weather_input_folder, 'June2019_T_P.csv')
+t_p_data = pd.read_csv(weather_input_filepath, delimiter=',', parse_dates=[['date','time']])
+t_p_data['date_time'] = pd.to_datetime(t_p_data['date_time'])
+#P_Pa = dfp.loc[dfp['date_time'] == '6/11/2019 0:00','air_p_mean_Pa'].values
 print("using as master spreadsheet:\n" + master_csv_path)
 print("The master data sheet:")
 print(master_data)
@@ -130,6 +136,6 @@ print("will run the following sample IDs:")
 print(row_ID)
 
 for row, sample_ID in row_ID.items():
-	analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,(.95,.85),'CO2',weather_input_filepath)
+	analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,(.95,.85),'CO2',t_p_data)
 	
 exit()
