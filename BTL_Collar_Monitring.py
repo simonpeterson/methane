@@ -112,7 +112,7 @@ for row in torun_rows:
 		print("need a date for row: " + str(row))
 		exit()
 	if isinstance(master_data.iloc[row]["start_time_(hh:mm:ss)"], datetime.time):
-		sample_ID = sample_ID + "_" + str(master_data.iloc[row]["start_time_(hh:mm:ss)"])
+		sample_ID = sample_ID + "_" + str(master_data.iloc[row]["start_time_(hh:mm:ss)"]).replace(":","꞉")
 	else:
 		print("no start time found for row: " + str(row))
 		exit()

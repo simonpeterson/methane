@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from math import *
 import datetime
-
+import re
 
 def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas_to_read,t_p_data):
 	'''program that analyzes the slope and performs fitting'''
@@ -18,12 +18,8 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	stop_time = master_data.iloc[row]["stop_time_(hh:mm:ss)"]
 	#the pressure data- if the start time is not available, pull from 2019 data
 	#TOCHANGE- pull data from the actual date- is this a datetime object??
-	print(type(datetime.datetime.fromisoformat(master_data.iloc[row]["date_(yyyy-mm-dd)"])))
-	print(t_p_data['date_time'])
-	print(t_p_data.loc[t_p_data['date_time'].apply(lambda x: x.date()) == datetime.date.fromisoformat(master_data.iloc[row]["date_(yyyy-mm-dd)"]),'date_time'])
 	P_Pa = t_p_data.loc[t_p_data['date_time'] == datetime.datetime.fromisoformat('2019-06-11'),'air_p_mean_Pa'].values
-	print(datetime.datetime.fromisoformat('2019-06-11'))
-	print("printing P_Pa")
+	print("pressure value to be used: ")
 	print(P_Pa)
 	
 	#the measurement device used
@@ -415,7 +411,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 						break
 					else:
 						print('Oh no, bad data! Go back to field!!')
-		print(sample_id)
+		print(sample_ID)
 	print('valid section length = %d' %valid_section_length)
 	print('Smoothing_window = %d' %smoothing_window)
 	print('Slope = %.5f ppm/s' %slope)
@@ -450,14 +446,16 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	ax.plot(ts_section.time, y_hat)
 	plt.ylabel('PPM CH4_$', fontsize = 12)
 	plt.xlabel('Time',fontsize = 12)
-	legend = plt.legend(('Raw Data', 'Linear Fit'), title = sample_id, loc='upper left', fontsize = 12, shadow=True)
+	legend = plt.legend(('Raw Data', 'Linear Fit'), title = sample_ID, loc='upper left', fontsize = 12, shadow=True)
 	plt.setp(legend.get_title(),fontsize='large', fontweight = 'bold')
 	plt.text(0.02,0.7, 'Flux = %.3f ± %.3f \nmicromol $CH_4$ $m^{-2}$ $s^{-1}$ \nR$^2$ = %.3f' %(flux, flux_error,R_squared[0].data), fontsize = 13, transform=ax.transAxes)
 
 	# #save the figure. 
 	# #########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 	# #########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	plt.savefig((Path(r'C:\Users\Simon\Documents\methane\_' + sample_id + '.png'),'dpi = 300', 'bbox_inches = tight'))
+	print(str(output_folder + "\\" + sample_ID + '.png'))
+	plot_name = sample_ID.replace
+	plt.savefig(str(output_folder + "\\" + sample_ID + '.png'),dpi = 300, bbox_inches = 'tight')
 	# ########################################################################
 	# print('xh = %.1f' %xh)
 	# Out put the data from the computation. 
@@ -468,10 +466,6 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 
-				
-	with open(r'C:\Users\Simon\Documents\methane\OutputData_newtry.txt',"at") as f:
-		f.write('\n')
-		np.savetxt(f, output_data, fmt="%s", delimiter=' ', newline=' ')
 	# ########################################################################  
 	# print(output_data)
 	# use this space delimited text (staring with "Sample_ID") to fill in the header line once time after the file is generated
@@ -480,22 +474,25 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	# Sample_ID Temp_C P_atm Area_m2 ChamberVol_L Chamber_height_cm valid_section_seconds smoothing_seconds slope_ppm_-s slope_error Rsquared Start_time flux_umol_m-2_s flux_error
 
 
-	# In[67]:
+	# In[67]:3
 
 
-	# Out put the data from the computation. 
+	# Out+ put the data from the computation. 
 	# With each program iteration, the results from the computation are saved into the space-delimited
 	# .txt file specified below (i.e. "July2019FluxData.txt")
 
 	# output variables to save into the output log file
-	output_data = [sample_id,temperature_mean,P[0],area,V,xh,valid_section_length,smoothing_window,slope,slope_error,
-				   R_squared[0].data,str(a[0].time.data),flux[0],flux_error[0]]
+	output_data_headers = ["sample_ID", "Temperature","Pressure","area", "volume", "valid_section_length","smoothing_window","slope", "slope error",
+	"R^2","time","flux","flux error"]
+	output_data = [sample_ID.replace("꞉",":"),temperature_mean,P[0],area,V,xh,valid_section_length,smoothing_window,slope,slope_error,
+				   R_squared[0].data,str(a[0].time.data),flux[0],flux_error[0]]	
 
 	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	with open(r'C:\Users\Simon\Documents\methane\OutputData_newtry.txt',"at") as f:
+	with open(os.path.join(output_folder,(sample_ID + ".txt")),'w') as f:
+		np.savetxt(f,output_data_headers,fmt = "%s,",newline=' ')
 		f.write('\n')
-		np.savetxt(f, output_data, fmt="%s", delimiter=' ', newline=' ')
+		np.savetxt(f, output_data, fmt = "%s,",delimiter=',', newline=' ')
 	########################################################################
 		
 	print(output_data)
