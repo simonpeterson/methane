@@ -489,7 +489,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 
 	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	with open(os.path.join(output_folder,(sample_ID + ".txt")),'w') as f:
+	with open(os.path.join(output_folder,(sample_ID + ".txt")),'w') as f: 	
 		np.savetxt(f,output_data_headers,fmt = "%s,",newline=' ')
 		f.write('\n')
 		np.savetxt(f, output_data, fmt = "%s,",delimiter=',', newline=' ')
