@@ -454,7 +454,6 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	# #########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 	# #########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 	print(str(output_folder + "\\" + sample_ID + '.png'))
-	plot_name = sample_ID.replace
 	plt.savefig(str(output_folder + "\\" + sample_ID + '.png'),dpi = 300, bbox_inches = 'tight')
 	# ########################################################################
 	# print('xh = %.1f' %xh)
@@ -486,7 +485,24 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	"R^2","time","flux","flux error"]
 	output_data = [sample_ID.replace("꞉",":"),temperature_mean,P[0],area,V,xh,valid_section_length,smoothing_window,slope,slope_error,
 				   R_squared[0].data,str(a[0].time.data),flux[0],flux_error[0]]	
-
+	#updating the master spreadsheet
+	#update the sample ID
+	master_data.iloc[row]["Sample ID"] = sample_ID
+	#the pressure used in the measurements, measured in pascals??
+	master_data.iloc[row]["air_Pa"] = P[0]
+	#the r squared value used
+	master_data.iloc[row]["R_value_used"] = R_squared[0]
+	#the flux found- need to know which gas we are measuring
+	if gas_to_read == "CH4":
+		master_data.iloc[row]["CH4 flux μmol m^-2 s^-1"] = flux[0]
+		master_data.iloc[row]["CH4 flux ± uncertainty"] = flux_error[0]
+	elif gas_to_read == "CO2":
+		master_data.iloc[row]["CO2 Flux μmol m^-2 s^-1"] = flux[0]
+		master_data.iloc[row]["CO2 Flux μmol m^-2 s^-1"] = flux_error[0]
+	else:
+		print(gas_to_read + " not able to be run")
+		exit()
+	#
 	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 	with open(os.path.join(output_folder,(sample_ID + ".txt")),'w') as f: 	
@@ -496,6 +512,8 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	########################################################################
 		
 	print(output_data)
+	#edit the master data sheet with the data from the 
+	print(R_squared[0].data)
 def compute_r2(ts_section, plot = False):
      x     = np.arange(len(ts_section))
      #removes time metadata for simplicity
