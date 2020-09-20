@@ -143,5 +143,5 @@ for row, sample_ID in row_ID.items():
 	master_data = analyze_slope(master_data, lgr_data,row,sample_ID + '_CH4',output_folder,(.95,.85),'CH4',t_p_data)
 	
 #write the new master data file
-master_data.to_excel(master_csv_path.replace('.xlsx','new.xlsx'))
+master_data.to_excel(master_csv_path.replace('.xlsx','new.xlsx'), index = False)
 exit()

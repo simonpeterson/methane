@@ -29,7 +29,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	# #submersion depth in water or snow (cm)
 	# #If multiple measurements are used in uneven surfaces, enter them in the mean field separated by comma
 	# #when not submerged, (i.e. with collars) enter "0"
-	sub_d = float(master_data.iloc[row]["submerged_depth(cm)"])
+	sub_d = float(master_data.ilociloc[row]["submerged_depth(cm)"])
 	# #Exposed height of chamber/bucket above surface (cm)
 	# #If multiple measurements are used in uneven surfaces, enter them in the mean field separated by comma
 	xh = float(master_data.iloc[row]["exposed_height(cm)"])-sub_d
