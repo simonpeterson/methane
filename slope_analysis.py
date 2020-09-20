@@ -14,8 +14,8 @@ import re
 def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas_to_read,t_p_data):
 	'''program that analyzes the slope and performs fitting'''
 	#get the start and stop times from the file
-	start_time = master_data.iloc[row]["start_time_(hh:mm:ss)"]
-	stop_time = master_data.iloc[row]["stop_time_(hh:mm:ss)"]
+	start_time = master_data.at[row, "start_time_(hh:mm:ss)"]
+	stop_time = master_data.at[row, "stop_time_(hh:mm:ss)"]
 	#the pressure data- if the start time is not available, pull from 2019 data
 	#TOCHANGE- pull data from the actual date- is this a datetime object??
 	P_Pa = t_p_data.loc[t_p_data['date_time'] == datetime.datetime.fromisoformat('2019-06-11'),'air_p_mean_Pa'].values
@@ -46,7 +46,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	#lgr_data.head()
 	
 	#get the date to get the actual pressure dataS
-	master_data.iloc[row]["date_(yyyy-mm-dd)"]
+	#master_data.iloc[row]["date_(yyyy-mm-dd)"]
 	#the gas to read needs to be in the format:
 	#[gas]d_ppm
 	#while being right adjusted 20 spaces
@@ -56,10 +56,13 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	temperature = lgr_data.between_time(start_time = "{}".format(start_time), end_time = "{}".format(stop_time))['              GasT_C']#.plot()
 	
 	#Plot the raw LGR data for the measurement window
-	ts = xr.DataArray(ts, coords = [ts.index], dims = ['time'])
-	ts.plot()
-	print(ts)
-	plt.show()
+	try:
+		ts = xr.DataArray(ts, coords = [ts.index], dims = ['time'])
+		ts.plot()
+		plt.show()
+	except ImportError:
+		print("the gives start time for data: " + sample_ID + "is not valid. will skip for now")
+		return master_data
 
 	temperature_mean = xr.DataArray(temperature, coords = [temperature.index], dims = ['time']).mean().data
 	temperature_error = temperature.std() + 1
@@ -374,7 +377,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 			min_section_length = min_section_length_original*2
 			section_length   = np.arange(min_section_length,max_section_length+1)[::-1]
 			ts_smooth = ts.rolling(time = smoothing_window, center = True).mean().dropna(dim='time')
-			valid_section_length, slope, a, R_squared = brain(section_length, ts_smooth)
+			valid_section_length, slope, a, R_squared = brain(section_length, ts,r_2_value )
 			if slope:
 				print('valid section length = %.3f' %valid_section_length)
 				print('Smoothing_window = %.3f' %smoothing_window)
@@ -388,7 +391,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 				min_section_length = int(min_section_length_original*2)
 				section_length   = np.arange(min_section_length,max_section_length+1)[::-1]
 				ts_smooth = ts.rolling(time = smoothing_window, center = True).mean().dropna(dim='time')
-				valid_section_length, slope, a, R_squared = brain(section_length, ts_smooth)
+				valid_section_length, slope, a, R_squared = brain(section_length, ts,r_2_value )
 				if slope:
 					print('valid section length = %.3f' %valid_section_length)
 					print('Smoothing_window = %.3f' %smoothing_window)
@@ -401,7 +404,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 					min_section_length = min_section_length_original*3
 					section_length   = np.arange(min_section_length,max_section_length+1)[::-1]
 					ts_smooth = ts.rolling(time = smoothing_window, center = True).mean().dropna(dim='time')
-					valid_section_length, slope, a, R_squared = brain(section_length, ts_smooth)
+					valid_section_length, slope, a, R_squared = brain(section_length, ts,r_2_value )
 					if slope:
 						print('valid section length = %.3f' %valid_section_length)
 						print('Smoothing_window = %.3f' %smoothing_window)
@@ -409,8 +412,11 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 		#                 print('Temperature = %.3f' %temperature_mean)
 		#                 print('Section start timestamp = ' +str(a[0].time.data))
 						break
-					else:
-						print('Oh no, bad data! Go back to field!!')
+					elif r_2_value == min(r_values):
+						print('Didn\'t work with lowest R_2 threshold value! Baaad data!!!')
+						master_data.at[row, "program_run?"] = "y"
+						master_data.at[row, "Use Data? (See Notes)"] = "rejected"
+						return master_data
 		print(sample_ID)
 	print('valid section length = %d' %valid_section_length)
 	print('Smoothing_window = %d' %smoothing_window)
@@ -487,21 +493,22 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 				   R_squared[0].data,str(a[0].time.data),flux[0],flux_error[0]]	
 	#updating the master spreadsheet
 	#update the sample ID
-	master_data.iloc[row]["Sample ID"] = sample_ID
+	master_data.at[row, "Sample ID"] = sample_ID
 	#the pressure used in the measurements, measured in pascals??
-	master_data.iloc[row]["air_Pa"] = P[0]
+	master_data.at[row, "air_Pa"] = P[0]
 	#the r squared value used
-	master_data.iloc[row]["R_value_used"] = R_squared[0]
+	master_data.at[row, "R_value_used"] = R_squared[0]
 	#the flux found- need to know which gas we are measuring
 	if gas_to_read == "CH4":
-		master_data.iloc[row]["CH4 flux μmol m^-2 s^-1"] = flux[0]
-		master_data.iloc[row]["CH4 flux ± uncertainty"] = flux_error[0]
+		master_data.at[row, "CH4 flux μmol m^-2 s^-1"] = flux[0]
+		master_data.at[row, "CH4 flux ± uncertainty"] = flux_error[0]
 	elif gas_to_read == "CO2":
-		master_data.iloc[row]["CO2 Flux μmol m^-2 s^-1"] = flux[0]
-		master_data.iloc[row]["CO2 Flux μmol m^-2 s^-1"] = flux_error[0]
+		master_data.at[row, "CO2 Flux μmol m^-2 s^-1"] = flux[0]
+		master_data.at[row, "CO2 Flux μmol m^-2 s^-1"] = flux_error[0]
 	else:
 		print(gas_to_read + " not able to be run")
-		exit()
+		return master_data
+	master_data.at[row, "program_run?"] = "y"
 	#
 	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 	#########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
@@ -513,7 +520,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 		
 	print(output_data)
 	#edit the master data sheet with the data from the 
-	print(R_squared[0].data)
+	return master_data
 def compute_r2(ts_section, plot = False):
      x     = np.arange(len(ts_section))
      #removes time metadata for simplicity

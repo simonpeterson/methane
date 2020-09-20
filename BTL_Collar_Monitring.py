@@ -134,8 +134,14 @@ for row in torun_rows:
 
 print("will run the following sample IDs:")
 print(row_ID)
-
+#convert the sample ID column to be of string data type
+master_data['Sample ID'] = master_data['Sample ID'].astype('object')
+master_data["Use Data? (See Notes)"] = master_data["Use Data? (See Notes)"].astype('object')
+print(master_data.dtypes)
 for row, sample_ID in row_ID.items():
-	master_data = analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,(.95,.85),'CO2',t_p_data)
-	master_data = analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,(.95,.85),'CH4',t_p_data)
+	master_data = analyze_slope(master_data, lgr_data,row,sample_ID + '_CO2',output_folder,(.95,.85),'CO2',t_p_data)
+	master_data = analyze_slope(master_data, lgr_data,row,sample_ID + '_CH4',output_folder,(.95,.85),'CH4',t_p_data)
+	
+#write the new master data file
+master_data.to_excel(master_csv_path.replace('.xlsx','new.xlsx'))
 exit()
