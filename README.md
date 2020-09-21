@@ -17,4 +17,4 @@ There is a master data excel file called **simon_masters.xlsx** where the data i
 These values must be entered for **each desired measurement time**
 
 For example, a measurement with the following data would look like this:
-[excel inputs](
+[excel inputs](https://github.com/simonpeterson/methane/blob/master/readme_images/excel_inputs.PNG?raw=true)
