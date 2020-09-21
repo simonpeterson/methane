@@ -29,7 +29,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	# #submersion depth in water or snow (cm)
 	# #If multiple measurements are used in uneven surfaces, enter them in the mean field separated by comma
 	# #when not submerged, (i.e. with collars) enter "0"
-	sub_d = float(master_data.ilociloc[row]["submerged_depth(cm)"])
+	sub_d = float(master_data.iloc[row]["submerged_depth(cm)"])
 	# #Exposed height of chamber/bucket above surface (cm)
 	# #If multiple measurements are used in uneven surfaces, enter them in the mean field separated by comma
 	xh = float(master_data.iloc[row]["exposed_height(cm)"])-sub_d
@@ -59,7 +59,6 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	try:
 		ts = xr.DataArray(ts, coords = [ts.index], dims = ['time'])
 		ts.plot()
-		plt.show()
 	except ImportError:
 		print("the gives start time for data: " + sample_ID + "is not valid. will skip for now")
 		return master_data
@@ -421,6 +420,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	print('valid section length = %d' %valid_section_length)
 	print('Smoothing_window = %d' %smoothing_window)
 	print('Slope = %.5f ppm/s' %slope)
+	print('R^2 = %.4f ' %R_squared[0].data)
 	print('R^2 = %.4f ' %R_squared[0].data)
 	print('Temperature = %.3f deg. C' %temperature_mean)
 	print('Section start timestamp = ' +str(a[0].time.data))
