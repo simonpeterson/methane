@@ -33,7 +33,7 @@ https://github.com/simonpeterson/methane/blob/master/readme_images/excel_inputs.
 ## 2. move the lgr data files into the input/lgr folder
 The files **do not** need to be "cleaned", i.e. the pgp nonsense message that sometimes shows up at the end does not need to be deleted; the files are cleaned automatically.
 
-## 3. temperature and pressure date
+## 3. temperature and pressure data
 This will be updated later. Currently the pressure is pulled from a June 2019 file. This is something that can be changed at a later time; currently the program pulls the data from a
 predetermined date, **not** the date of the measurement.
 
