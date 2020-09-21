@@ -27,8 +27,12 @@ For example, a measurement with the following data:
 - **collar height**         0 cm
 - **submerged depth**       0 cm
 - **exposed height**        34.5 cm
-![excel inputs](https://github.com/simonpeterson/methane/blob/master/readme_images/excel_inputs.PNG?raw=true)
 
+would look like this:
+![excel inputs](https://github.com/simonpeterson/methane/blob/master/readme_images/excel_inputs.PNG?raw=true)
+The 
+> program_run?
+ column does not need to have an "n"; anything that isn't "y" will cause the program to process the data
 ## 2. Move the lgr Data Files into the input/lgr Folder
 The files **do not** need to be "cleaned", i.e. the pgp nonsense message that sometimes shows up at the end does not need to be deleted; the files are cleaned automatically.
 
@@ -50,7 +54,7 @@ CD into the directory and run the program on anaconda prompt as shown:
 The program will then run. There will be many messages flying across the screen; many of these are currently for debugging purposes, and can be ignored.
 
 ## 5. Outputs
-There are three main "classe" of output files:
+There are three main "classes" of output files:
 
 1. A new excel file is created which is simply the name of the old file + "_new". This file can be reviewed for accuracy then saved as the master data file. It is located in the **data** subfolder. Currently, this file is "simon_masters_new.xlsx"
 2. A plot of the fit. This is done for each gas for each sample time given in the excel file. These are found in the **outputs** subfolder.
