@@ -15,6 +15,17 @@ There is a master data excel file called **simon_masters.xlsx** where the data i
 - exposed height
 
 These values must be entered for **each desired measurement time**
+1. 
+For example, a measurement with the following data:
 
-For example, a measurement with the following data would look like this:
+- **start time:** 			17:12:20
+- **stop time:**  			17:15:30
+- **location**    			vault lake
+- **date**        			2020-07-30
+- **measurement device** 	bucket
+- **collar**             	yes
+- **collar height**         0 cm
+- **submerged depth**       0 cm
+- **exposed height**        34.5 cm
 ![excel inputs](https://github.com/simonpeterson/methane/blob/master/readme_images/excel_inputs.PNG?raw=true)
+https://github.com/simonpeterson/methane/blob/master/readme_images/excel_inputs.PNG
