@@ -413,7 +413,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 		#                 print('Section start timestamp = ' +str(a[0].time.data))
 						break
 					elif r_2_value == min(r_values):
-						print('Didn\'t work with lowest R_2 threshold value! Baaad data!!!')
+						print('Didn\'t work with lowest R_2 threshold value! Baaad data!!! will still')
 						master_data.at[row, "program_run?"] = "y"
 						master_data.at[row, "Use Data? (See Notes)"] = "rejected"
 						return master_data
