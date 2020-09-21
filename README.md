@@ -30,7 +30,7 @@ For example, a measurement with the following data:
 
 would look like this:
 ![excel inputs](https://github.com/simonpeterson/methane/blob/master/readme_images/excel_inputs.PNG?raw=true)
-The `<program_run?>`
+The `program_run?`
  column does not need to have an "n"; anything that isn't "y" will cause the program to process the data
 ## 2. Move the lgr Data Files into the input/lgr Folder
 The files **do not** need to be "cleaned", i.e. the pgp nonsense message that sometimes shows up at the end does not need to be deleted; the files are cleaned automatically.
