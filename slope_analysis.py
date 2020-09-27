@@ -85,30 +85,6 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	    xh_error = xh*0.5
 	else :
 	     xh_error = xh*0.2
-
-	diam_top = 25.8
-	r_top = diam_top/2
-
-	# #"bottom" here is actually the top of the bucket. Because when modelling a truncated cone, it's 
-	# #easier to think of the bottom as the base with the larger radius
-	# diam_bottom = 29
-	# r_bottom = diam_bottom/2
-
-	# #lid volume (cm^3)
-	lid_vol = 975
-	lid_vol_error = lid_vol* 0.01
-
-	# #tubing dimensions (cm, cm^3 for t_vol)
-	t_length = 914.4
-	t_length_error = t_length * 0.05
-	t_id = 0.3175
-	t_vol = pi*((t_id/2)**2)*t_length
-	t_vol_error = t_length_error * abs(t_id)
-
-	# #LGR cell volume (cm^3)
-	LGR_vol = 335
-	LGR_vol_error = LGR_vol*0.01
-
 	# #Volume of Chamber (as a truncated cone) (cm^3)
 	# vol = pi*h*(r_bottom**2 + r_top**2 + r_bottom*r_top)/3
 
@@ -186,102 +162,177 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	# This section is optimized for the "bucket chambers" in saturated sediments. 
 	# snow density calculations are not required 
 	print("calculating size")
-	if master_data.iloc[row]["measurement_device"] == "bucket":
-		print("using bucket in sediment calculation")
-		#Chamber dimensions for white buckets (units of cm)
+	
+	
+	#if the container is a bucket, define variables that are used for both sediment and snow measurements
+	if "bucket" in master_data.iloc[row]["measurement_device"]:
+		# #lid volume (cm^3)
+		lid_vol = 975
+		lid_vol_error = lid_vol* 0.01
+		#dimensions of the bucket
 		h = 34.5
 		diam_top = 25.8
 		r_top = diam_top/2
-
-		# "bottom" here is actually the top of the bucket. Because when modelling a truncated cone, it's 
-		# easier to think of the bottom as the base with the larger radius
-		diam_bottom = 29
-		r_bottom = diam_bottom/2
-
-		#lid volume (cm^3)
-		lid_vol = 975
-		lid_vol_error = lid_vol* 0.01
-
-		#tubing dimensions (cm, cm^3 for t_vol)
+		# #tubing dimensions (cm, cm^3 for t_vol)
 		t_length = 914.4
 		t_length_error = t_length * 0.05
 		t_id = 0.3175
 		t_vol = pi*((t_id/2)**2)*t_length
 		t_vol_error = t_length_error * abs(t_id)
-
-		#LGR cell volume (cm^3)
+		# #LGR cell volume (cm^3)
 		LGR_vol = 335
 		LGR_vol_error = LGR_vol*0.01
+		# #"bottom" here is actually the top of the bucket. Because when modelling a truncated cone, it's 
+		# #easier to think of the bottom as the base with the larger radius
+		diam_bottom = 29
+		r_bottom = diam_bottom/2
+		if master_data.iloc[row]["measurement_device"] == "bucket_sediment":
+			print("using bucket in sediment calculation")
 
-		#Volume of Chamber (as a truncated cone) (cm^3)
-		vol = pi*h*(r_bottom**2 + r_top**2 + r_bottom*r_top)/3
+			#Volume of Chamber (as a truncated cone) (cm^3)
+			vol = pi*h*(r_bottom**2 + r_top**2 + r_bottom*r_top)/3
 
-		#Normal Height (height from center of bottom base to apex of the imaginary cone) (cm)
-		n_height = h + ((h*r_top)/(r_bottom - r_top))
+			#Normal Height (height from center of bottom base to apex of the imaginary cone) (cm)
+			n_height = h + ((h*r_top)/(r_bottom - r_top))
 
-		#Volume of Normal cone (if chamber were not truncated, i.e. bucket-shaped)(cm^3)
-		cone_volume = (1/3)*pi*(r_bottom**2)*n_height
+			#Volume of Normal cone (if chamber were not truncated, i.e. bucket-shaped)(cm^3)
+			cone_volume = (1/3)*pi*(r_bottom**2)*n_height
 
-		#Volume of the imaginary cone (the volume that is removed/truncated to form the bucket shape)(cm^3)
-		imagine_volume = (1/3)*pi*(r_top**2)*(n_height - h)
+			#Volume of the imaginary cone (the volume that is removed/truncated to form the bucket shape)(cm^3)
+			imagine_volume = (1/3)*pi*(r_top**2)*(n_height - h)
 
-		#Hypotenuse of Normal cone (cm)
-		hypo_cone = sqrt((r_bottom**2)+(n_height**2))
+			#Hypotenuse of Normal cone (cm)
+			hypo_cone = sqrt((r_bottom**2)+(n_height**2))
 
-		#angle of normal cone apothems (radians)
-		angle = (asin(r_bottom/hypo_cone))*2
+			#angle of normal cone apothems (radians)
+			angle = (asin(r_bottom/hypo_cone))*2
 
-		#Normal height of sediment Cone (cm)
-		n_height_sed = (n_height - h) + (h - xh)
-		n_height_sed_error = xh_error
+			#Normal height of sediment Cone (cm)
+			n_height_sed = (n_height - h) + (h - xh)
+			n_height_sed_error = xh_error
 
-		#exterior angle *between sediment level and the side of bucket (downward) (degrees)
-		ex_angle = 180 - ((angle*(180/pi))/2) - 90
+			#exterior angle *between sediment level and the side of bucket (downward) (degrees)
+			ex_angle = 180 - ((angle*(180/pi))/2) - 90
 
-		#Hypotenuse of sediment cone (cm)
-		hypo_sed = (n_height_sed/cos(angle/2))
-		hypo_sed_error = n_height_sed_error*abs((cos(angle/2)))
+			#Hypotenuse of sediment cone (cm)
+			hypo_sed = (n_height_sed/cos(angle/2))
+			hypo_sed_error = n_height_sed_error*abs((cos(angle/2)))
 
-		#Radius of top of sediment (cm)
-		r_sed = sqrt((hypo_sed**2)-(n_height_sed**2))
-		r_sed_error = 2*(hypo_sed_error/abs(hypo_sed))*abs(r_sed) + 2*(n_height_sed_error/abs(n_height_sed))*abs(r_sed)
+			#Radius of top of sediment (cm)
+			r_sed = sqrt((hypo_sed**2)-(n_height_sed**2))
+			r_sed_error = 2*(hypo_sed_error/abs(hypo_sed))*abs(r_sed) + 2*(n_height_sed_error/abs(n_height_sed))*abs(r_sed)
 
-		#Volume of sediment cone (cm^3)
-		sed_cone_volume = (1/3)*pi*(r_sed**2)*(n_height_sed)
-		sed_cone_volume_error = (sqrt((r_sed_error/r_sed)**2 + (n_height_sed_error/n_height_sed)**2))*abs(pi/3)
+			#Volume of sediment cone (cm^3)
+			sed_cone_volume = (1/3)*pi*(r_sed**2)*(n_height_sed)
+			sed_cone_volume_error = (sqrt((r_sed_error/r_sed)**2 + (n_height_sed_error/n_height_sed)**2))*abs(pi/3)
 
-		#Uncorrected Volume of sediment in Chamber (non-porous snow) (cm^3)
-		un_sed_vol = sed_cone_volume - imagine_volume
-		un_sed_vol_error = sed_cone_volume_error
+			#Uncorrected Volume of sediment in Chamber (non-porous snow) (cm^3)
+			un_sed_vol = sed_cone_volume - imagine_volume
+			un_sed_vol_error = sed_cone_volume_error
 
-		#Snow bulk density (g/cm^3) Sturm et al. 2010 Journal of Hydrometeorology
-		#Mean = 0.217 g/cm^3 Taken from 1541 observations in Alaskan/Canadian Taiga
-		#Std = 0.056 g/cm^3
-		pb = 0.217
-		pb_error = 0.056
+			#Snow bulk density (g/cm^3) Sturm et al. 2010 Journal of Hydrometeorology
+			#Mean = 0.217 g/cm^3 Taken from 1541 observations in Alaskan/Canadian Taiga
+			#Std = 0.056 g/cm^3
+			pb = 0.217
+			pb_error = 0.056
 
-		#Snow water equivalent (cm)
-		swe = (h - xh)*(pb/1)
-		swe_error = sqrt((xh_error/xh)**2 + (pb_error/pb)**2)
+			#Snow water equivalent (cm)
+			swe = (h - xh)*(pb/1)
+			swe_error = sqrt((xh_error/xh)**2 + (pb_error/pb)**2)
 
-		#Corrected volume of snow (cylinder since "top" base of bucket is pushed into snow)(cm^3)
-		corrected_snow_vol = pi*(r_top**2)*swe
-		corrected_snow_vol_error = swe_error *abs(pi*(r_top**2))
+			#Corrected volume of snow (cylinder since "top" base of bucket is pushed into snow)(cm^3)
+			corrected_snow_vol = pi*(r_top**2)*swe
+			corrected_snow_vol_error = swe_error *abs(pi*(r_top**2))
 
-		#Total volume(cm^3)
-		total_vol = vol -un_sed_vol + lid_vol + t_vol + LGR_vol
-		total_vol_error = un_sed_vol_error + lid_vol_error + t_vol_error + LGR_vol_error
+			#Total volume(cm^3)
+			total_vol = vol -un_sed_vol + lid_vol + t_vol + LGR_vol
+			total_vol_error = un_sed_vol_error + lid_vol_error + t_vol_error + LGR_vol_error
 
-		#Total volume corrected (accounting for swe-based snow volume)(cm^3)
-		total_vol_corr = vol - corrected_snow_vol + lid_vol + t_vol + LGR_vol
-		total_vol_corr_error = corrected_snow_vol_error + lid_vol_error+ t_vol_error + LGR_vol_error
+			#Total volume corrected (accounting for swe-based snow volume)(cm^3)
+			total_vol_corr = vol - corrected_snow_vol + lid_vol + t_vol + LGR_vol
+			total_vol_corr_error = corrected_snow_vol_error + lid_vol_error+ t_vol_error + LGR_vol_error
 
-		#Convert total corrected volume to liters (L)
-		V = total_vol / 1000
-		V_error = total_vol_error / 1000
+			#Convert total corrected volume to liters (L)
+			V = total_vol / 1000
+			V_error = total_vol_error / 1000
 
-		#Surface area of chamber opening (m^2)
-		area = pi*(r_top**2)/10000
+			#Surface area of chamber opening (m^2)
+			area = pi*(r_top**2)/10000
+		elif master_data.iloc[row]["measurement_device"] == "bucket_snow":
+			print("running snow bucket calculation")
+			#Volume of Chamber (as a truncated cone) (cm^3)
+			vol = pi*h*(r_bottom**2 + r_top**2 + r_bottom*r_top)/3
+
+			#Normal Height (height from center of bottom base to apex of the imaginary cone) (cm)
+			n_height = h + ((h*r_top)/(r_bottom - r_top))
+
+			#Volume of Normal cone (if chamber were not truncated, i.e. bucket-shaped)(cm^3)
+			cone_volume = (1/3)*pi*(r_bottom**2)*n_height
+
+			#Volume of the imaginary cone (the volume that is removed/truncated to form the bucket shape)(cm^3)
+			imagine_volume = (1/3)*pi*(r_top**2)*(n_height - h)
+
+			#Hypotenuse of Normal cone (cm)
+			hypo_cone = sqrt((r_bottom**2)+(n_height**2))
+
+			#angle of normal cone apothems (radians)
+			angle = (asin(r_bottom/hypo_cone))*2
+
+			#Normal height of Snow Cone (cm)
+			n_height_snow = (n_height - h) + (h - xh)
+			n_height_snow_error = xh_error
+
+			#exterior angle *between snow level and the side of bucket (downward) (degrees)
+			ex_angle = 180 - ((angle*(180/pi))/2) - 90
+
+			#Hypotenuse of Snow cone (cm)
+			hypo_snow = (n_height_snow/cos(angle/2))
+			hypo_snow_error = n_height_snow_error*abs((cos(angle/2)))
+
+			#Radius of top of snow (cm)
+			r_snow = sqrt((hypo_snow**2)-(n_height_snow**2))
+			r_snow_error = 2*(hypo_snow_error/abs(hypo_snow))*abs(r_snow) + 2*(n_height_snow_error/abs(n_height_snow))*abs(r_snow)
+
+			#Volume of snow cone (cm^3)
+			snow_cone_volume = (1/3)*pi*(r_snow**2)*(n_height_snow)
+			snow_cone_volume_error = (sqrt((r_snow_error/r_snow)**2 + (n_height_snow_error/n_height_snow)**2))*abs(pi/3)
+
+			#Uncorrected Volume of Snow in Chamber (non-porous snow) (cm^3)
+			un_snow_vol = snow_cone_volume - imagine_volume
+			un_snow_vol_error = snow_cone_volume_error
+
+			#Snow bulk density (g/cm^3) Sturm et al. 2010 Journal of Hydrometeorology
+			#Mean = 0.217 g/cm^3 Taken from 1541 observations in Alaskan/Canadian Taiga
+			#Std = 0.056 g/cm^3 
+			pb = 0.217
+			pb_error = 0.056
+
+			#Snow water equivalent (cm)
+			swe = (h - xh)*(pb/1)
+			swe_error = sqrt((xh_error/xh)**2 + (pb_error/pb)**2)
+
+			#Corrected volume of snow (cylinder since "top" base of bucket is pushed into snow)(cm^3)
+			corrected_snow_vol = pi*(r_top**2)*swe
+			corrected_snow_vol_error = swe_error *abs(pi*(r_top**2))
+
+			#Total volume(cm^3)
+			total_vol = vol -un_snow_vol + lid_vol + t_vol + LGR_vol
+			total_vol_error = un_snow_vol_error + lid_vol_error + t_vol_error + LGR_vol_error
+
+			#Total volume corrected (accounting for swe-based snow volume)(cm^3)
+			total_vol_corr = vol - corrected_snow_vol + lid_vol + t_vol + LGR_vol
+			total_vol_corr_error = corrected_snow_vol_error + lid_vol_error+ t_vol_error + LGR_vol_error
+
+			#Convert total corrected volume to liters (L)
+			V = total_vol_corr / 1000
+			V_error = total_vol_corr_error / 1000
+
+			#Surface area of chamber opening (m^2)
+			area = pi*(r_top**2)/10000
+		else:
+			print("invalid measurement container" + master_data.iloc[row]["measurement_device"] + " in row: " + str(row))
+			master_data.at[row, "program_run?"] = "n"
+			return master_data
 	elif master_data.iloc[row]["measurement_device"] == "chamber":
 		# This section is optimized for the "large square chambers" rested on aluminum collar locations. 
 		# density calculations are not required 
@@ -320,10 +371,14 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 		#Snow water equivalent (cm)
 		swe = (h - xh)*(pb/1)
 		swe_error = sqrt((xh_error/xh)**2 + (pb_error/pb)**2)
-
+		
+		
+		#ACHTUNG!!!!
+		#this was commented out by Simon Peterson on 27.09.20, as it does not make sense for snow errror 
+		#calculations to be in the chamber section
 		#Corrected volume of snow (cylinder since "top" base of bucket is pushed into snow)(cm^3)
-		corrected_snow_vol = pi*(r_top**2)*swe
-		corrected_snow_vol_error = swe_error *abs(pi*(r_top**2))
+		#corrected_snow_vol = pi*(r_top**2)*swe
+		#corrected_snow_vol_error = swe_error *abs(pi*(r_top**2))
 
 		#Total volume(cm^3)
 		total_vol = vol + t_vol + LGR_vol + collar_vol
@@ -336,8 +391,9 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 		#Surface area of collar opening (m^2)
 		area = (collar_w*collar_d)/10000
 	else:
-		print("not a valid chamber, please double check")
-		exit()
+		print("invalid measurement container" + master_data.iloc[row]["measurement_device"] + " in row: " + str(row))
+		master_data.at[row, "program_run?"] = "n"
+		return master_data
 	# As a sanity check, print the volume of the chamber/bucket and it's error in liters
 	print('volume = ', V, ' ±',  V_error,  ' liters')
 	
@@ -421,6 +477,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 						print('Didn\'t work with lowest R_2 threshold value! Baaad data!!! will still')
 						master_data.at[row, "program_run?"] = "y"
 						master_data.at[row, "Use Data? (See Notes)"] = "rejected"
+						master_data.at[row, "R_value_used"] = R_squared[0]
 						return master_data
 		print(sample_ID)
 	print('valid section length = %d' %valid_section_length)
