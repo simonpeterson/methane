@@ -20,7 +20,7 @@ from slope_analysis import *
 
 #TODO- make sample ID print to command line, automatically create the ID tag
 #string names of the valid measurement devices:
-measurement_devices = ["bucket", "chamber"]
+measurement_devices = ["bucket_sediment","bucket_snow", "chamber"]
 #greenhouse gases that can be measured:
 gases = ["CO2","CH4"]
 #current working directory
