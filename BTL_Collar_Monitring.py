@@ -21,6 +21,8 @@ from slope_analysis import *
 #TODO- make sample ID print to command line, automatically create the ID tag
 #string names of the valid measurement devices:
 measurement_devices = ["bucket", "chamber"]
+#greenhouse gases that can be measured:
+gases = ["CO2","CH4"]
 #current working directory
 cwd = os.getcwd()
 output_folder = os.path.join(cwd,"outputs")
@@ -101,6 +103,7 @@ print("will run the program for a total of " + str(len(torun_rows)) + " times")
 
 #dictionary with the rows as keys and the sample IDs as values
 row_ID = {}
+row_gases = {}
 for row in torun_rows:
 	#create the sample ID. The format is:
 	#yyyy-mm-dd_hh:mm:ss_location_collection-instrument
@@ -130,6 +133,13 @@ for row in torun_rows:
 		exit()
 	else:
 		sample_ID = sample_ID + "_" + str(master_data.iloc[row]["measurement_device"])
+	if master_data.iloc[row]["gas"] not in gases:
+		print("invalid gas: " + str(master_data.iloc[row]["gas"]))
+		print("found in row: " + str(row))
+		exit()
+	else:
+		sample_ID = sample_ID + "_" + str(master_data.iloc[row]["gas"])
+		row_gases.update({row:str(master_data.iloc[row]["gas"])})
 	row_ID.update({row:sample_ID})
 
 print("will run the following sample IDs:")
@@ -139,8 +149,7 @@ master_data['Sample ID'] = master_data['Sample ID'].astype('object')
 master_data["Use Data? (See Notes)"] = master_data["Use Data? (See Notes)"].astype('object')
 print(master_data.dtypes)
 for row, sample_ID in row_ID.items():
-	master_data = analyze_slope(master_data, lgr_data,row,sample_ID + '_CO2',output_folder,(.95,.85),'CO2',t_p_data)
-	master_data = analyze_slope(master_data, lgr_data,row,sample_ID + '_CH4',output_folder,(.95,.85),'CH4',t_p_data)
+	master_data = analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,(.95,.85,.7),row_gases[row],t_p_data)
 	
 #write the new master data file
 master_data.to_excel(master_csv_path.replace('.xlsx','new.xlsx'), index = False)

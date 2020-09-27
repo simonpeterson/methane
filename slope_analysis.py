@@ -54,15 +54,20 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	print(('[' + gas_to_read + ']d_ppm').rjust(20))
 	ts          = lgr_data.between_time(start_time = "{}".format(start_time), end_time = "{}".format(stop_time))[('[' + gas_to_read + ']d_ppm').rjust(20)]
 	temperature = lgr_data.between_time(start_time = "{}".format(start_time), end_time = "{}".format(stop_time))['              GasT_C']#.plot()
-	
+	print(type(ts))
 	#Plot the raw LGR data for the measurement window
+	#change to check if ts is empty
 	try:
 		ts = xr.DataArray(ts, coords = [ts.index], dims = ['time'])
 		ts.plot()
 	except ImportError:
 		print("the gives start time for data: " + sample_ID + "is not valid. will skip for now")
 		return master_data
-
+	print(ts.dims)
+	new_ts = ts.dropna('time')
+	if new_ts.time.size == 0:
+		print("the gives start time for data: " + sample_ID + "is not valid. will skip for now")
+		return master_data
 	temperature_mean = xr.DataArray(temperature, coords = [temperature.index], dims = ['time']).mean().data
 	temperature_error = temperature.std() + 1
 	#lgr_data.head()
