@@ -423,8 +423,10 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	########################################################################
 	section_length   = np.arange(min_section_length_original,max_section_length+1)[::-1]
 	for r_2_value in r_values:
+		max_r_2 = []
 		print("running with r^2 of: " + str(r_2_value))
-		valid_section_length, slope, a, R_squared = brain(section_length, ts,r_2_value )
+		valid_section_length, slope, a, R_squared, max_r_squared = brain(section_length, ts,r_2_value )
+		max_r_2.append(max_r_squared)
 		if slope:
 			print('valid section length = %.3f' %valid_section_length)
 			print('Smoothing_window = %.3f' %smoothing_window)
@@ -438,7 +440,8 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 			min_section_length = min_section_length_original*2
 			section_length   = np.arange(min_section_length,max_section_length+1)[::-1]
 			ts_smooth = ts.rolling(time = smoothing_window, center = True).mean().dropna(dim='time')
-			valid_section_length, slope, a, R_squared = brain(section_length, ts,r_2_value )
+			valid_section_length, slope, a, R_squared, max_r_sqaured = brain(section_length, ts,r_2_value)
+			max_r_2.append(max_r_squared)
 			if slope:
 				print('valid section length = %.3f' %valid_section_length)
 				print('Smoothing_window = %.3f' %smoothing_window)
@@ -452,7 +455,8 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 				min_section_length = int(min_section_length_original*2)
 				section_length   = np.arange(min_section_length,max_section_length+1)[::-1]
 				ts_smooth = ts.rolling(time = smoothing_window, center = True).mean().dropna(dim='time')
-				valid_section_length, slope, a, R_squared = brain(section_length, ts,r_2_value )
+				valid_section_length, slope, a, R_squared, max_r_squared = brain(section_length, ts,r_2_value )
+				max_r_2.append(max_r_squared)
 				if slope:
 					print('valid section length = %.3f' %valid_section_length)
 					print('Smoothing_window = %.3f' %smoothing_window)
@@ -465,7 +469,8 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 					min_section_length = min_section_length_original*3
 					section_length   = np.arange(min_section_length,max_section_length+1)[::-1]
 					ts_smooth = ts.rolling(time = smoothing_window, center = True).mean().dropna(dim='time')
-					valid_section_length, slope, a, R_squared = brain(section_length, ts,r_2_value )
+					valid_section_length, slope, a, R_squared, max_r_squared = brain(section_length, ts,r_2_value )
+					max_r_2.append(max_r_squared)
 					if slope:
 						print('valid section length = %.3f' %valid_section_length)
 						print('Smoothing_window = %.3f' %smoothing_window)
@@ -477,7 +482,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 						print('Didn\'t work with lowest R_2 threshold value! Baaad data!!! will still')
 						master_data.at[row, "program_run?"] = "y"
 						master_data.at[row, "Use Data? (See Notes)"] = "rejected"
-						master_data.at[row, "R_value_used"] = R_squared[0]
+						master_data.at[row, "R_value_used"] = max(max_r_2)
 						return master_data
 		print(sample_ID)
 	print('valid section length = %d' %valid_section_length)
@@ -600,6 +605,7 @@ def compute_r2(ts_section, plot = False):
 
      return r_square, slope
 def brain(section_length, ts,r_2_threshold):
+    max_r_2_values = []
     for section_length in section_length:
         # print(section_length)
         r_2 = []
@@ -616,7 +622,6 @@ def brain(section_length, ts,r_2_threshold):
             slope.append(tmp_slope)
             start.append(tmp_start)
             # end.append(tmp_end)
-
         r_2 = xr.DataArray(r_2, coords = [ts[:-int(section_length)].time], dims = ['time'])
         slope = xr.DataArray(slope, coords = [ts[:-int(section_length)].time], dims = ['time'])
         # end = xr.DataArray(end, coords = [ts[:-int(section_length)].time], dims = ['time'])
@@ -625,9 +630,18 @@ def brain(section_length, ts,r_2_threshold):
 
         # c = end.where(r_2>=r_2_threshold, drop=True)
         #
-
+        #all of the data windows that fit the r_2 threshhold
         a = list(slope.where(r_2>=r_2_threshold, drop=True))
+		#all the R_squared values that worked
         R_squared = list(r_2.where(r_2>=r_2_threshold, drop=True))
+		#the maximum r_squared value
+		#doesn't work if the array size is 0
+        if (len(ts)-section_length) <= 0:
+            max_r_sqaured = 0
+        else:
+            max_r_squared_index = r_2.argmax()
+            max_r_squared = r_2[max_r_squared_index]
+            max_r_2_values.append(max_r_squared)
         result = []
         valid_length = []
         if a:
@@ -642,7 +656,7 @@ def brain(section_length, ts,r_2_threshold):
         # ts.loc[a.time.values].plot()
         #
         # np.where(ts.index==a.time[0])
-    return valid_length, result, a, R_squared
+    return valid_length, result, a, R_squared, max(max_r_2_values)
 
 def get_slope_error(ts_section, plot = True):
      x     = np.arange(len(ts_section))
