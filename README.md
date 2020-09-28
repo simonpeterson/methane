@@ -39,7 +39,13 @@ The files **do not** need to be "cleaned", i.e. the pgp nonsense message that so
 This will be updated later. Currently the pressure is pulled from a June 2019 file. This is something that can be changed at a later time; currently the program pulls the data from a
 predetermined date, **not** the date of the measurement.
 
-## 4. Running The Program
+## 4. R_2 values
+The R_2 values are pulled from the 
+> r_values
+ excel file in the 
+> data
+ folder. Note that adding more r_2 values will create a longer run time. 
+## 5. Running The Program
 After all the desired samples have been entered, the program can be run. **Anaconda prompt** must be used to run the program; download this if you don't already have it. The program to be run is:
 
 	> BTL_Collar_Monitring.py
@@ -52,7 +58,7 @@ CD into the directory and run the program on anaconda prompt as shown:
 
 The program will then run. There will be many messages flying across the screen; many of these are currently for debugging purposes, and can be ignored.
 
-## 5. Outputs
+## 6. Outputs
 There are three main "classes" of output files:
 
 1. A new excel file is created which is simply the name of the old file + "_new". This file can be reviewed for accuracy then saved as the master data file. It is located in the **data** subfolder. Currently, this file is "simon_masters_new.xlsx"
