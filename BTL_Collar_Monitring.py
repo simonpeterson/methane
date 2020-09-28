@@ -31,6 +31,12 @@ weather_input_folder = os.path.join(cwd, "inputs", "weather_data")
 print("pulling lgr data from: \n" + lgr_input_folder)
 print("pulling weather data, when not from internet, from: \n" + weather_input_folder + "\n")
 
+#the location of the r_2 excel file
+r_2_values_path = os.path.join(cwd, "data","r_values.xlsx")
+r_2_values = pd.read_excel(r_2_values_path, header = 0)
+r_2_values = r_2_values['r_values'].values.tolist()
+print(r_2_values)
+
 #read the excel file for the input. Close the file before reading it.
 master_csv_path = os.path.join(cwd, "data","simon_masters.xlsx")
 master_data = pd.read_excel(master_csv_path, header = 0) #headers are the first row
@@ -149,7 +155,7 @@ master_data['Sample ID'] = master_data['Sample ID'].astype('object')
 master_data["Use Data? (See Notes)"] = master_data["Use Data? (See Notes)"].astype('object')
 print(master_data.dtypes)
 for row, sample_ID in row_ID.items():
-	master_data = analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,(.95,.85,.7),row_gases[row],t_p_data)
+	master_data = analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_2_values,row_gases[row],t_p_data)
 	
 #write the new master data file
 master_data.to_excel(master_csv_path.replace('.xlsx','new.xlsx'), index = False)
