@@ -33,9 +33,9 @@ print("pulling weather data, when not from internet, from: \n" + weather_input_f
 
 #the location of the r_2 excel file
 r_2_values_path = os.path.join(cwd, "data","r_values.xlsx")
+#get the r2 values to be run
 r_2_values = pd.read_excel(r_2_values_path, header = 0)
-r_2_values = r_2_values['r_values'].values.tolist()
-print(r_2_values)
+r_2_values = r_2_values[str(r_2_values.columns[0])].values.tolist()
 
 #read the excel file for the input. Close the file before reading it.
 master_csv_path = os.path.join(cwd, "data","simon_masters.xlsx")
@@ -153,7 +153,6 @@ print(row_ID)
 #convert the sample ID column to be of string data type
 master_data['Sample ID'] = master_data['Sample ID'].astype('object')
 master_data["Use Data? (See Notes)"] = master_data["Use Data? (See Notes)"].astype('object')
-print(master_data.dtypes)
 for row, sample_ID in row_ID.items():
 	master_data = analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_2_values,row_gases[row],t_p_data)
 	
