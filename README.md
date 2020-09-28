@@ -41,9 +41,9 @@ predetermined date, **not** the date of the measurement.
 
 ## 4. R_2 values
 The R_2 values are pulled from the 
-> r_values
+`r_values`
  excel file in the 
-> data
+`data`
  folder. Note that adding more r_2 values will create a longer run time. 
 ## 5. Running The Program
 After all the desired samples have been entered, the program can be run. **Anaconda prompt** must be used to run the program; download this if you don't already have it. The program to be run is:
