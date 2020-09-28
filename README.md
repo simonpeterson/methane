@@ -39,12 +39,12 @@ The files **do not** need to be "cleaned", i.e. the pgp nonsense message that so
 This will be updated later. Currently the pressure is pulled from a June 2019 file. This is something that can be changed at a later time; currently the program pulls the data from a
 predetermined date, **not** the date of the measurement.
 
-## 4. R_2 values
-The R_2 values are pulled from the 
+## 4. R<sup>2</sup> values
+The r<sup>2</sup> values are pulled from the 
 `r_values.xlsx`
  excel file in the 
 `data`
- folder. Note that adding more r_2 values will create a longer run time. 
+ folder. Note that adding more r<sup>2</sup> values will create a longer run time. 
 ## 5. Running The Program
 After all the desired samples have been entered, the program can be run. **Anaconda prompt** must be used to run the program; download this if you don't already have it. The program to be run is:
 
@@ -79,3 +79,11 @@ where:
 an example of the output files is shown:
 ![example outputs](https://github.com/simonpeterson/methane/blob/master/readme_images/example_outputs.PNG?raw=true)
 
+## 7. Program_run? column
+The `program_run?` column **will** be marked with a y **if**
+- The program was successfully able to create a linear fit within the r<sup>2</sup> range. In this case, all of the output data is printed to the master excel file
+- The program was run, but the data was rejected because the r<sup>2</sup> was below the lowest threshold. In this case, the only output printed to the excel is the max r<sup>2</sup> of the data.
+
+The `program_run?` column will be left unmarked/marked with an "n" if:
+- The time is outside of the times present in the LGR data, i.e. you are requesting a midnight time when you were in the field at 3 pm!
+- the container type, data, or other value(s) are missing or innaccurate
