@@ -19,8 +19,6 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	#the pressure data- if the start time is not available, pull from 2019 data
 	#TOCHANGE- pull data from the actual date- is this a datetime object??
 	P_Pa = t_p_data.loc[t_p_data['date_time'] == datetime.datetime.fromisoformat('2019-06-11'),'air_p_mean_Pa'].values
-	print("pressure value to be used: ")
-	print(P_Pa)
 	
 	#the measurement device used
 	measurement_device = master_data.iloc[row]["measurement_device"]
@@ -51,10 +49,8 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	#[gas]d_ppm
 	#while being right adjusted 20 spaces
 	ts = ""
-	print(('[' + gas_to_read + ']d_ppm').rjust(20))
 	ts          = lgr_data.between_time(start_time = "{}".format(start_time), end_time = "{}".format(stop_time))[('[' + gas_to_read + ']d_ppm').rjust(20)]
 	temperature = lgr_data.between_time(start_time = "{}".format(start_time), end_time = "{}".format(stop_time))['              GasT_C']#.plot()
-	print(type(ts))
 	#Plot the raw LGR data for the measurement window
 	#change to check if ts is empty
 	try:
@@ -64,7 +60,6 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 		print("the gives start time for data: " + sample_ID + "is not valid. will skip for now")
 		master_data.at[row, "program_run?"] = "n"
 		return master_data
-	print(ts.dims)
 	new_ts = ts.dropna('time')
 	if new_ts.time.size == 0:
 		print("the gives start time for data: " + sample_ID + "is not valid. will skip for now")
@@ -484,7 +479,6 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 						master_data.at[row, "Use Data? (See Notes)"] = "rejected"
 						master_data.at[row, "R_value_used"] = max(max_r_2)
 						return master_data
-		print(sample_ID)
 	print('valid section length = %d' %valid_section_length)
 	print('Smoothing_window = %d' %smoothing_window)
 	print('Slope = %.5f ppm/s' %slope)
@@ -505,8 +499,6 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	P_error = P * 0.01
 	R = 0.082057338
 	moles = (P*V)/(R*(temperature_mean+273.15))
-	print(moles)
-	print(P_error)
 	moles_error = sqrt((P_error/P)**2 + (V_error/V)**2 + (temperature_error/(temperature_mean+273.15)**2))
 	flux = slope*moles/area
 	flux_error = (sqrt(slope_error/abs(slope))**2 + (moles_error/moles)**2)
@@ -527,7 +519,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	# #save the figure. 
 	# #########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
 	# #########!!!INPUT!!!########!!!INPUT!!!####!!!INPUT!!!##################
-	print(str(output_folder + "\\" + sample_ID + '.png'))
+	print("saving output file as: \n" + str(output_folder + "\\" + sample_ID + '.png'))
 	plt.savefig(str(output_folder + "\\" + sample_ID + '.png'),dpi = 300, bbox_inches = 'tight')
 	# ########################################################################
 	# print('xh = %.1f' %xh)
@@ -586,7 +578,6 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 		np.savetxt(f, output_data, fmt = "%s,",delimiter=',', newline=' ')
 	########################################################################
 		
-	print(output_data)
 	#edit the master data sheet with the data from the 
 	return master_data
 def compute_r2(ts_section, plot = False):

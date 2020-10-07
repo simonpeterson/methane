@@ -43,24 +43,18 @@ master_data = pd.read_excel(master_csv_path, header = 0) #headers are the first 
 #apparently excel formats their data with the dates also including a timestamp. Annoying
 master_data["date_(yyyy-mm-dd)"] = master_data["date_(yyyy-mm-dd)"].apply(lambda x: x.date().isoformat())
 
-
-print(master_data["date_(yyyy-mm-dd)"])
-
 #temperature and pressure data
 weather_input_filepath = os.path.join(weather_input_folder, 'June2019_T_P.csv')
 t_p_data = pd.read_csv(weather_input_filepath, delimiter=',', parse_dates=[['date','time']])
 t_p_data['date_time'] = pd.to_datetime(t_p_data['date_time'])
 #P_Pa = dfp.loc[dfp['date_time'] == '6/11/2019 0:00','air_p_mean_Pa'].values
 print("using as master spreadsheet:\n" + master_csv_path)
-print("The master data sheet:")
-print(master_data)
 
 
 #read the data from the lgr files. Clean any "dirty" files.
 #TODO- make so that junk at the end of the files is cleaned up
 first = True
 for file in os.listdir(lgr_input_folder):
-	print(file)
 	if file.endswith(".txt"):
 		with open(os.path.join(lgr_input_folder,file),'r') as f:
 			file_text = f.read()
@@ -99,7 +93,6 @@ lgr_data.index = pd.DatetimeIndex(lgr_data.index)
 #make a for loop to run through the data which has not already been run by the program
 torun_rows = []
 for row in range(master_data.shape[0]):
-	print(master_data.iloc[row]['program_run?'])
 	if master_data.iloc[row]['program_run?'] != 'y':
 		torun_rows.append(row)
 print("the rows that will be run, starting at index 0:")
@@ -149,7 +142,9 @@ for row in torun_rows:
 	row_ID.update({row:sample_ID})
 
 print("will run the following sample IDs:")
-print(row_ID)
+for value in row_ID.values():
+	print(value)
+
 #convert the sample ID column to be of string data type
 master_data['Sample ID'] = master_data['Sample ID'].astype('object')
 master_data["Use Data? (See Notes)"] = master_data["Use Data? (See Notes)"].astype('object')
