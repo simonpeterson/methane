@@ -564,7 +564,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 		master_data.at[row, "CH4 flux ± uncertainty"] = flux_error[0]
 	elif gas_to_read == "CO2":
 		master_data.at[row, "CO2 Flux μmol m^-2 s^-1"] = flux[0]
-		master_data.at[row, "CO2 Flux μmol m^-2 s^-1"] = flux_error[0]
+		master_data.at[row, "CO2 flux ± uncertainty"] = flux_error[0]
 	else:
 		print(gas_to_read + " not able to be run")
 		return master_data
