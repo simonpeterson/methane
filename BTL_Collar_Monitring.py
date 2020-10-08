@@ -41,8 +41,12 @@ r_2_values = r_2_values[str(r_2_values.columns[0])].values.tolist()
 master_csv_path = os.path.join(cwd, "data","simon_masters.xlsx")
 master_data = pd.read_excel(master_csv_path, header = 0) #headers are the first row
 #apparently excel formats their data with the dates also including a timestamp. Annoying
-master_data["date_(yyyy-mm-dd)"] = master_data["date_(yyyy-mm-dd)"].apply(lambda x: x.date().isoformat())
-
+try:
+	master_data["date_(yyyy-mm-dd)"] = master_data["date_(yyyy-mm-dd)"].apply(lambda x: x.date().isoformat())
+except AttributeError:
+	print("read date as string")
+#assume it is a string
+	
 #temperature and pressure data
 weather_input_filepath = os.path.join(weather_input_folder, 'June2019_T_P.csv')
 t_p_data = pd.read_csv(weather_input_filepath, delimiter=',', parse_dates=[['date','time']])
@@ -116,11 +120,11 @@ for row in torun_rows:
 	if isinstance(master_data.iloc[row]["start_time_(hh:mm:ss)"], datetime.time):
 		sample_ID = sample_ID + "_" + str(master_data.iloc[row]["start_time_(hh:mm:ss)"]).replace(":","h",1).replace(":",'m',1) + "s"
 	else:
-		print("no start time found for row: " + str(row))
-		exit()
+		sample_ID = sample_ID + "_" + str(master_data.iloc[row]["start_time_(hh:mm:ss)"]).replace(":","h",1).replace(":",'m',1) + "s"
+		#print("no start time found for row: " + str(row))
 	if not isinstance(master_data.iloc[row]["stop_time_(hh:mm:ss)"], datetime.time):
+		print("stop time is string")
 		print("no stop time found for row: " + str(row))
-		exit()
 	if master_data.iloc[row]["location_(lake)"] != np.nan:
 		sample_ID = sample_ID + "_" + str(master_data.iloc[row]["location_(lake)"])
 	else:

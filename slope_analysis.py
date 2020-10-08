@@ -57,7 +57,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 		ts = xr.DataArray(ts, coords = [ts.index], dims = ['time'])
 		ts.plot()
 	except ImportError:
-		print("the gives start time for data: " + sample_ID + "is not valid. will skip for now")
+		print("the given start time for data: " + sample_ID + "is not valid. will skip for now")
 		master_data.at[row, "program_run?"] = "n"
 		return master_data
 	new_ts = ts.dropna('time')
