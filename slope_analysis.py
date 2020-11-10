@@ -474,7 +474,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 		#                 print('Section start timestamp = ' +str(a[0].time.data))
 						break
 					elif r_2_value == min(r_values):
-						print('Didn\'t work with lowest R_2 threshold value! Baaad data!!! will still')
+						print('Didn\'t work with lowest R_2 threshold value! Baaad data!!! will still print R^2 value to excel')
 						master_data.at[row, "program_run?"] = "y"
 						master_data.at[row, "Use Data? (See Notes)"] = "rejected"
 						master_data.at[row, "R_value_used"] = max(max_r_2)
@@ -595,9 +595,10 @@ def compute_r2(ts_section, plot = False):
          plt.plot(y_hat)
 
      return r_square, slope
-def brain(section_length, ts,r_2_threshold):
+def brain(section_lengths, ts,r_2_threshold):
+    print("the length of the time series:")
     max_r_2_values = []
-    for section_length in section_length:
+    for section_length in section_lengths:
         # print(section_length)
         r_2 = []
         slope = []
@@ -636,18 +637,19 @@ def brain(section_length, ts,r_2_threshold):
         result = []
         valid_length = []
         if a:
+            print("breaking out")
             # print(a)
             result = a[0].data
             valid_length = section_length
             # print('starting time stamp' + a[0].time)
             break
-
-        # ts.sel(time=slice(b[0],c[0]))
-        # ts.plot()
-        # ts.loc[a.time.values].plot()
-        #
-        # np.where(ts.index==a.time[0])
-    return valid_length, result, a, R_squared, max(max_r_2_values)
+		#check to see if there are any r^2 values
+    if not max_r_2_values:
+        output_r_squared = 0
+    else:
+        output_r_squared = max(max_r_2_values)
+		
+    return valid_length, result, a, R_squared, output_r_squared
 
 def get_slope_error(ts_section, plot = True):
      x     = np.arange(len(ts_section))
