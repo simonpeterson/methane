@@ -61,6 +61,7 @@ first = True
 for file in os.listdir(lgr_input_folder):
 	if file.endswith(".txt"):
 		with open(os.path.join(lgr_input_folder,file),'r') as f:
+			print("reading file: " + file)
 			file_text = f.read()
 			if "BEGIN PGP MESSAGE" in file_text:
 				print("found text \" BEGIN PGP MESSAGE \", will clean file")
@@ -84,6 +85,7 @@ for file in os.listdir(lgr_input_folder):
 			first = False
 		else:
 			print("appending data")
+			print(file)
 			new_data = pd.read_csv(os.path.join(lgr_input_folder,file), delimiter=',', header = 1, index_col = 1)
 			lgr_data = lgr_data.append(new_data)
 		print("size of total LGR data array: " + str(lgr_data.shape))

@@ -510,7 +510,7 @@ def analyze_slope(master_data, lgr_data,row,sample_ID,output_folder,r_values,gas
 	figure, ax = plt.subplots(figsize = (10,8))
 	ax.plot(ts_section.time, y)
 	ax.plot(ts_section.time, y_hat)
-	plt.ylabel('PPM CH4_$', fontsize = 12)
+	plt.ylabel('PPM ' + gas_to_read + '_$', fontsize = 12)
 	plt.xlabel('Time',fontsize = 12)
 	legend = plt.legend(('Raw Data', 'Linear Fit'), title = sample_ID, loc='upper left', fontsize = 12, shadow=True)
 	plt.setp(legend.get_title(),fontsize='large', fontweight = 'bold')
